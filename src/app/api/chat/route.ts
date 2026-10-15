@@ -10,11 +10,11 @@ import { getSystemPrompt } from "@/lib/system-prompt";
 
 export const runtime = "nodejs";
 
-/** Preferred chat models on Groq for this product (reasoning / text). */
+/** Fast-first order: 20B is much quicker; 120B only as last resort. */
 const GROQ_CHAT_MODELS = [
-  "openai/gpt-oss-120b",
   "openai/gpt-oss-20b",
   "qwen/qwen3.8-27b",
+  "openai/gpt-oss-120b",
 ] as const;
 
 const GROQ_MODEL =
@@ -78,16 +78,15 @@ export async function POST(req: Request) {
           content: typeof row.content === "string" ? row.content : "",
         };
       })
-    );
+    ).slice(-6);
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const messages = [
-      { role: "system" as const, content: getSystemPrompt() },
+      { role: "system" as const, content: getSystemPrompt(message) },
       ...history.map((m) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: message },
     ];
 
-    // Try preferred model first, then fall back across the supported chat models.
     const modelCandidates = [
       GROQ_MODEL,
       ...GROQ_CHAT_MODELS.filter((m) => m !== GROQ_MODEL),
@@ -101,8 +100,8 @@ export async function POST(req: Request) {
       try {
         const completion = await groq.chat.completions.create({
           model,
-          temperature: 0.55,
-          max_tokens: 900,
+          temperature: 0.4,
+          max_tokens: 320,
           messages,
         });
         answer = extractAnswer(completion);
@@ -128,7 +127,6 @@ export async function POST(req: Request) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown provider error";
-    // Do not log secrets or full request bodies
     console.error("[api/chat] provider error:", message.slice(0, 200));
 
     return NextResponse.json(

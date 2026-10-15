@@ -24,7 +24,7 @@ cp .env.example .env.local
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GROQ_API_KEY` | Yes | API key from [console.groq.com/keys](https://console.groq.com/keys) |
-| `GROQ_MODEL` | No | Defaults to `openai/gpt-oss-120b`. Alternatives: `openai/gpt-oss-20b`, `qwen/qwen3.8-27b` |
+| `GROQ_MODEL` | No | Defaults to `openai/gpt-oss-20b` (fast). Optional: `openai/gpt-oss-120b`, `qwen/qwen3.8-27b` |
 | `NEXT_TELEMETRY_DISABLED` | No | Set to `1` on Vercel (also set in `vercel.json`) |
 
 `package.json` includes an `allowScripts` policy so `sharp` and `unrs-resolver` install scripts can run on modern npm / Vercel.

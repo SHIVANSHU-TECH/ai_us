@@ -8,8 +8,8 @@ export interface ChatMessage {
 }
 
 export const MAX_MESSAGE_LENGTH = 4000;
-export const MAX_HISTORY_MESSAGES = 16;
-export const MAX_HISTORY_CHARS = 12000;
+export const MAX_HISTORY_MESSAGES = 6;
+export const MAX_HISTORY_CHARS = 4000;
 
 export const INITIAL_ASSISTANT_MESSAGE =
   "Welcome! I'm Shivanshu's AI Resume Assistant. Ask me about his engineering experience, projects, system architecture, technical decisions, or suitability for a role. I'll answer using his verified professional profile.";
