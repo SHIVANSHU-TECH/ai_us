@@ -25,6 +25,9 @@ cp .env.example .env.local
 |----------|----------|-------------|
 | `GROQ_API_KEY` | Yes | API key from [console.groq.com/keys](https://console.groq.com/keys) |
 | `GROQ_MODEL` | No | Defaults to `llama-3.3-70b-versatile` |
+| `NEXT_TELEMETRY_DISABLED` | No | Set to `1` on Vercel (also set in `vercel.json`) |
+
+`package.json` includes an `allowScripts` policy so `sharp` and `unrs-resolver` install scripts can run on modern npm / Vercel.
 
 Never commit `.env.local` or real secrets. The chat API runs only on the server (`POST /api/chat`).
 
