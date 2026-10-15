@@ -7,10 +7,10 @@ import {
   type ChatRole,
 } from "@/lib/chat";
 import { getSystemPrompt } from "@/lib/system-prompt";
+import { getConsultSystemPrompt } from "@/lib/consult-prompt";
 
 export const runtime = "nodejs";
 
-/** Fast-first order: 20B is much quicker; 120B only as last resort. */
 const GROQ_CHAT_MODELS = [
   "openai/gpt-oss-20b",
   "qwen/qwen3.8-27b",
@@ -23,6 +23,7 @@ const GROQ_MODEL =
 interface ChatRequestBody {
   message?: unknown;
   history?: unknown;
+  mode?: unknown;
 }
 
 function isConfigured(): boolean {
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     }
 
+    const mode = body.mode === "consult" ? "consult" : "resume";
     const message = typeof body.message === "string" ? body.message.trim() : "";
     if (!message) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
@@ -80,9 +82,14 @@ export async function POST(req: Request) {
       })
     ).slice(-6);
 
+    const system =
+      mode === "consult"
+        ? getConsultSystemPrompt()
+        : getSystemPrompt(message);
+
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const messages = [
-      { role: "system" as const, content: getSystemPrompt(message) },
+      { role: "system" as const, content: system },
       ...history.map((m) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: message },
     ];
@@ -100,8 +107,8 @@ export async function POST(req: Request) {
       try {
         const completion = await groq.chat.completions.create({
           model,
-          temperature: 0.4,
-          max_tokens: 320,
+          temperature: mode === "consult" ? 0.45 : 0.4,
+          max_tokens: mode === "consult" ? 380 : 320,
           messages,
         });
         answer = extractAnswer(completion);
@@ -122,6 +129,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       answer,
       model: usedModel,
+      mode,
       relatedProjects: detectRelatedProjects(`${message}\n${answer}`),
     });
   } catch (error) {

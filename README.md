@@ -83,6 +83,14 @@ ClientScout AI is included from verified public product documentation (`https://
 
 ---
 
+## Routes
+
+| Path | Purpose |
+|------|---------|
+| `/` | AI Resume chat (recruiter Q&A) |
+| `/consult` | Business consult — founders/recruiters describe problems; assistant listens, then maps where Shivanshu fits |
+| `/systems` `/experience` `/projects` `/skills` `/resume` `/contact` | Profile sections |
+
 ## Scripts
 
 | Command | Purpose |
