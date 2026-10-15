@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { resumeKnowledge } from "@/lib/resume-knowledge";
 import { Check, Copy, ExternalLink, Mail, Phone } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 async function copyText(value: string) {
   await navigator.clipboard.writeText(value);
@@ -94,7 +94,7 @@ function LinkRow({
   label: string;
   value: string;
   href: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   copied: boolean;
   onCopy: () => void;
 }) {

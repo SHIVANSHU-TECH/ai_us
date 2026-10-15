@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shivanshu's AI Resume
 
-## Getting Started
+Production conversational resume for **Shivanshu Shukla** — a terminal-inspired command center where recruiters chat with an AI assistant grounded in verified resume data.
 
-First, run the development server:
+Stack: **Next.js App Router · TypeScript · Tailwind CSS · Groq (server-side)**
+
+---
+
+## 1. Installation
+
+```bash
+cd ai-resume
+npm install
+```
+
+## 2. Environment variables
+
+Copy the example file and add your Groq key:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GROQ_API_KEY` | Yes | API key from [console.groq.com/keys](https://console.groq.com/keys) |
+| `GROQ_MODEL` | No | Defaults to `llama-3.3-70b-versatile` |
+
+Never commit `.env.local` or real secrets. The chat API runs only on the server (`POST /api/chat`).
+
+## 3. Local development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Without `GROQ_API_KEY`, the UI still loads; chat returns a clear setup message (HTTP 503) instead of a fake answer.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 4. AI provider setup (Groq)
 
-## Learn More
+1. Create an account at [groq.com](https://groq.com).
+2. Generate an API key.
+3. Set `GROQ_API_KEY` in `.env.local`.
+4. Restart `npm run dev`.
 
-To learn more about Next.js, take a look at the following resources:
+The assistant uses a version-controlled knowledge file (`src/lib/resume-knowledge.ts`) plus a separate system prompt. Recruiter messages are treated as untrusted input.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 5. Deploy to Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push this project to GitHub.
+2. Import the repo in Vercel (root directory: `ai-resume` if monorepo).
+3. Add `GROQ_API_KEY` (and optional `GROQ_MODEL`) in Project → Settings → Environment Variables.
+4. Deploy.
 
-## Deploy on Vercel
+```bash
+npm run build
+npm start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 6. Resume PDF and profile photo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Asset | Path |
+|-------|------|
+| Resume PDF | `public/Shivanshu_resume_Swe.pdf` |
+| Profile photo | `public/images/shivanshu.jpeg` |
+
+Replace these files in place (same filenames) when updating assets. The Download Resume button points at `/Shivanshu_resume_Swe.pdf`.
+
+## 7. Updating resume knowledge
+
+1. Update the PDF in `public/`.
+2. Edit `src/lib/resume-knowledge.ts` — profile, experience, projects, skills, achievements, architecture notes.
+3. Keep metrics and employers **exactly** as documented. Do not invent details.
+4. Bump `version` in that file.
+5. Redeploy.
+
+ClientScout AI is included from verified public product documentation (`https://clientscout.in`) in addition to the resume PDF projects.
+
+---
+
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Local development |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint |
+
+## Quality notes
+
+- Chat history is bounded server-side (message length + turn count).
+- No API keys in client bundles.
+- Job-description comparison mode instructs the model to separate matches / adjacent experience / missing evidence.
+- Compensation discussions cite verified impact and ownership; the model must not invent salary figures.

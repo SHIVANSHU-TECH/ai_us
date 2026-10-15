@@ -42,13 +42,6 @@ export function ChatInterface({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  useEffect(() => {
-    if (!externalPrompt || loading) return;
-    void submitMessage(externalPrompt);
-    onExternalPromptConsumed?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [externalPrompt]);
-
   const submitMessage = async (raw: string) => {
     const text = raw.trim();
     if (!text || loading) return;
@@ -104,6 +97,15 @@ export function ChatInterface({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!externalPrompt || loading) return;
+    const prompt = externalPrompt;
+    onExternalPromptConsumed?.();
+    void submitMessage(prompt);
+    // Intentionally driven by externalPrompt only — avoid re-firing on loading flips.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalPrompt]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();

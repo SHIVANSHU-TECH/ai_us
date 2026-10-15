@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     images: ["/images/shivanshu.jpeg"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.svg",
   },
 };
 
