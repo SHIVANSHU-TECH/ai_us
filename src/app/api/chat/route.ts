@@ -10,7 +10,15 @@ import { getSystemPrompt } from "@/lib/system-prompt";
 
 export const runtime = "nodejs";
 
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+/** Preferred chat models on Groq for this product (reasoning / text). */
+const GROQ_CHAT_MODELS = [
+  "openai/gpt-oss-120b",
+  "openai/gpt-oss-20b",
+  "qwen/qwen3.8-27b",
+] as const;
+
+const GROQ_MODEL =
+  process.env.GROQ_MODEL?.trim() || GROQ_CHAT_MODELS[0];
 
 interface ChatRequestBody {
   message?: unknown;
@@ -19,6 +27,15 @@ interface ChatRequestBody {
 
 function isConfigured(): boolean {
   return Boolean(process.env.GROQ_API_KEY?.trim());
+}
+
+function extractAnswer(completion: {
+  choices?: Array<{ message?: { content?: string | null } | null } | null>;
+}): string {
+  return (
+    completion.choices?.[0]?.message?.content?.trim() ||
+    "I could not generate a response. Please try again."
+  );
 }
 
 export async function POST(req: Request) {
@@ -64,24 +81,48 @@ export async function POST(req: Request) {
     );
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const messages = [
+      { role: "system" as const, content: getSystemPrompt() },
+      ...history.map((m) => ({ role: m.role, content: m.content })),
+      { role: "user" as const, content: message },
+    ];
 
-    const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
-      temperature: 0.35,
-      max_tokens: 1200,
-      messages: [
-        { role: "system", content: getSystemPrompt() },
-        ...history.map((m) => ({ role: m.role, content: m.content })),
-        { role: "user", content: message },
-      ],
-    });
+    // Try preferred model first, then fall back across the supported chat models.
+    const modelCandidates = [
+      GROQ_MODEL,
+      ...GROQ_CHAT_MODELS.filter((m) => m !== GROQ_MODEL),
+    ];
 
-    const answer =
-      completion.choices[0]?.message?.content?.trim() ||
-      "I could not generate a response. Please try again.";
+    let answer = "";
+    let usedModel = GROQ_MODEL;
+    let lastError: unknown;
+
+    for (const model of modelCandidates) {
+      try {
+        const completion = await groq.chat.completions.create({
+          model,
+          temperature: 0.35,
+          max_tokens: 1200,
+          messages,
+        });
+        answer = extractAnswer(completion);
+        usedModel = model;
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[api/chat] model ${model} failed:`, msg.slice(0, 200));
+      }
+    }
+
+    if (lastError || !answer) {
+      throw lastError || new Error("All Groq chat models failed.");
+    }
 
     return NextResponse.json({
       answer,
+      model: usedModel,
       relatedProjects: detectRelatedProjects(`${message}\n${answer}`),
     });
   } catch (error) {
