@@ -23,12 +23,12 @@ export function ProfilePanel() {
     <section className="panel accent-glow p-4 md:p-5">
       <div className="label-caps mb-3">$ whoami</div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <div className="relative h-20 w-20 shrink-0 overflow-hidden border border-line bg-panel2 sm:h-24 sm:w-24">
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-mint/35 bg-panel2 sm:h-24 sm:w-24">
           <Image
             src={p.photo}
             alt={`${p.name} profile photo`}
             fill
-            className="object-cover object-top"
+            className="object-cover object-center"
             sizes="96px"
             priority
           />

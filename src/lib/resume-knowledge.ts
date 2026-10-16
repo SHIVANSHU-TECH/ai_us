@@ -19,7 +19,7 @@ export const resumeKnowledge = {
     portfolio: "https://shivanshushukla.vercel.app",
     github: "https://github.com/shivanshu-tech",
     linkedin: "https://www.linkedin.com/in/shivanshu-shukla-3626322b5/",
-    photo: "/images/shivanshu.jpeg",
+    photo: "/images/shivanshu-linkedin.jpg",
     resumePdf: "/Shivanshu_resume_Swe.pdf",
   },
   education: [
