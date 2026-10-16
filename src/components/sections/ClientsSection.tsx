@@ -37,7 +37,10 @@ export function ClientsSection() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 border border-mint/35 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-mint hover:bg-mint/10"
                 >
-                  Live site <ExternalLink size={10} />
+                  {"linkLabel" in client && client.linkLabel
+                    ? client.linkLabel
+                    : "Live site"}{" "}
+                  <ExternalLink size={10} />
                 </a>
               )}
             </div>

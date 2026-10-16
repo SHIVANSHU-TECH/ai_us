@@ -355,7 +355,9 @@ export const resumeKnowledge = {
       client: "Creator.co.ai",
       contactPerson: "Rohit Bamola",
       category: "AI content automation / Reels",
-      liveUrl: null as string | null,
+      liveUrl:
+        "https://res.cloudinary.com/dpfmxzkr/video/upload/v1791141530/ai-agents-vishal-sikka/regen-avatar2/final/ai-agents-vishal-sikka-avatar2-final.mp4",
+      linkLabel: "Demo reel",
       summary:
         "Built AI-powered short-form video automation for Creator.co.ai — systems that help turn content ideas into finished Instagram-style reels with voice, visuals, and delivery, managed with Rohit Bamola.",
       scope: [
@@ -370,7 +372,7 @@ export const resumeKnowledge = {
         "AI / automation problems similar to Creator.co.ai work with Rohit Bamola",
       ],
       notes:
-        "Keep explanations simple — what was built and the outcome. Do not name internal skill repos, avatar engine versions, or step-by-step tool pipelines. Demo/live URL: add when Shivanshu provides it; never invent a link.",
+        "Keep explanations simple — what was built and the outcome. Do not name internal skill repos, avatar engine versions, or step-by-step tool pipelines. Share the Cloudinary demo reel URL when relevant.",
     },
     {
       id: "connect-astro",

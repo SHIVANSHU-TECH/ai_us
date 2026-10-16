@@ -11,7 +11,7 @@ export function buildCoreProfile(): string {
     `Education: ${edu.degree}, ${edu.school} (${edu.period}), CGPA ${edu.cgpa}`,
     "Roles: Binary Geckos (Full Stack, Apr 2026–Present, 30+ healthcare sites, React/Stripe/GA4); Arora Innovation/Cosmiron (Full Stack, Dec 2025–Mar 2026, React/Node/AWS/CI-CD); CollegeXConnect Founder (Jun 2024–Present, 3k+ users, 250k+ visitors, Next.js/Node/MongoDB/Firebase); Tikk18; Vital-Vistara; Salesforce intern.",
     "Projects: CompanyBrain RAG (~1.3s retrieval); AI Voice Assistant Electron/Gemini (~65% fewer repetitive actions); ApplyAI resume screening; ClientScout AI (https://clientscout.in).",
-    "Client work: Aviva Beauty Shopify OS 2.0 (Vanshika, https://avivabeauty.in); Creator.co.ai AI short-form video automation (Rohit Bamola); Connect Astro astrology consultation platform (Gautam, founder) — AstroTalk-style connect with astrologers.",
+    "Client work: Aviva Beauty Shopify OS 2.0 (Vanshika, https://avivabeauty.in); Creator.co.ai AI short-form video automation (Rohit Bamola, demo reel: https://res.cloudinary.com/dpfmxzkr/video/upload/v1791141530/ai-agents-vishal-sikka/regen-avatar2/final/ai-agents-vishal-sikka-avatar2-final.mp4); Connect Astro astrology consultation platform (Gautam, founder) — AstroTalk-style connect with astrologers.",
     `Skills: ${[
       ...k.skills.frontend.slice(0, 5),
       ...k.skills.backend.slice(0, 6),

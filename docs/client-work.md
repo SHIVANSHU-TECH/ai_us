@@ -43,7 +43,7 @@ D2C / ecommerce founders need a custom Shopify theme + conversion-focused cart U
 | **Client / brand** | Creator.co.ai |
 | **Stakeholder** | Rohit Bamola |
 | **Category** | AI content automation / Instagram-style reels |
-| **Demo / live URL** | _Add when Shivanshu shares it_ |
+| **Demo reel** | https://res.cloudinary.com/dpfmxzkr/video/upload/v1791141530/ai-agents-vishal-sikka/regen-avatar2/final/ai-agents-vishal-sikka-avatar2-final.mp4 |
 
 ### What Shivanshu delivered (keep it simple)
 - Built AI-powered short-form video automation for Creator.co.ai
