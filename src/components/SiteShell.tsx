@@ -10,6 +10,7 @@ import { resumeKnowledge } from "@/lib/resume-knowledge";
 const NAV: { href: string; label: string }[] = [
   { href: "/", label: "Home" },
   { href: "/consult", label: "Consult" },
+  { href: "/clients", label: "Clients" },
   { href: "/systems", label: "Systems" },
   { href: "/experience", label: "Experience" },
   { href: "/projects", label: "Projects" },

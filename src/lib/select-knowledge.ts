@@ -11,6 +11,7 @@ export function buildCoreProfile(): string {
     `Education: ${edu.degree}, ${edu.school} (${edu.period}), CGPA ${edu.cgpa}`,
     "Roles: Binary Geckos (Full Stack, Apr 2026–Present, 30+ healthcare sites, React/Stripe/GA4); Arora Innovation/Cosmiron (Full Stack, Dec 2025–Mar 2026, React/Node/AWS/CI-CD); CollegeXConnect Founder (Jun 2024–Present, 3k+ users, 250k+ visitors, Next.js/Node/MongoDB/Firebase); Tikk18; Vital-Vistara; Salesforce intern.",
     "Projects: CompanyBrain RAG (~1.3s retrieval); AI Voice Assistant Electron/Gemini (~65% fewer repetitive actions); ApplyAI resume screening; ClientScout AI (https://clientscout.in).",
+    "Client work: Aviva Beauty Shopify OS 2.0 (Vanshika, https://avivabeauty.in); Creator.co.ai AI reel automation (Rohit Bamola); Connect Astro desktop (Gautam, founder).",
     `Skills: ${[
       ...k.skills.frontend.slice(0, 5),
       ...k.skills.backend.slice(0, 6),
@@ -19,6 +20,19 @@ export function buildCoreProfile(): string {
       ...k.skills.databases,
     ].join(", ")}`,
   ].join("\n");
+}
+
+function detailClients(ids?: string[]): string {
+  const list =
+    ids && ids.length > 0
+      ? resumeKnowledge.clientWork.filter((c) => ids.includes(c.id))
+      : resumeKnowledge.clientWork;
+  return list
+    .map((c) => {
+      const live = c.liveUrl ? ` Live: ${c.liveUrl}` : "";
+      return `${c.client} (${c.contactPerson}) — ${c.category}. ${c.summary} Scope: ${c.scope.slice(0, 4).join("; ")}. Pitch when: ${c.pitchingAngles[0]}.${live}${c.notes ? ` Note: ${c.notes}` : ""}`;
+    })
+    .join("\n");
 }
 
 function detailExperience(ids: string[]): string {
@@ -64,11 +78,36 @@ export function buildRelevantKnowledge(query: string): string {
     /skill|react|next|node|aws|cloud|backend|frontend|stack|fastapi|mongo|postgres/.test(
       q
     );
-  const wantsAi = /ai engineer|llm|rag|gemini|openai|vector|agent/.test(q);
+  const wantsAi =
+    /ai engineer|llm|rag|gemini|openai|vector|agent|automation|reel|heygen|elevenlabs/.test(
+      q
+    );
+  const wantsClients =
+    /client|aviva|shopify|d2c|ecommerce|e-commerce|skincare|beauty|vanshika|creator\.co|rohit|bamola|reel|connect.?astro|gautam|desktop app|freelance|agency|brand/.test(
+      q
+    );
 
   if (wantsSalary || wantsJd || wantsAi) {
     parts.push(
-      "Fit notes: " + resumeKnowledge.valueSignals.points.slice(0, 4).join(" ")
+      "Fit notes: " + resumeKnowledge.valueSignals.points.slice(0, 5).join(" ")
+    );
+  }
+
+  if (wantsClients || wantsOverview) {
+    parts.push(
+      wantsOverview || /client work|clients|portfolio of clients/.test(q)
+        ? detailClients()
+        : detailClients(
+            [
+              /aviva|shopify|d2c|ecommerce|beauty|skincare|vanshika/.test(q)
+                ? "aviva-beauty"
+                : "",
+              /creator|rohit|bamola|reel|heygen|short.?form|instagram/.test(q)
+                ? "creator-co-ai"
+                : "",
+              /connect.?astro|gautam|desktop/.test(q) ? "connect-astro" : "",
+            ].filter(Boolean)
+          )
     );
   }
 

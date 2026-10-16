@@ -89,7 +89,10 @@ ClientScout AI is included from verified public product documentation (`https://
 |------|---------|
 | `/` | AI Resume chat (recruiter Q&A) |
 | `/consult` | Business consult — founders/recruiters describe problems; assistant listens, then maps where Shivanshu fits |
+| `/clients` | Client work: Aviva Beauty, Creator.co.ai, Connect Astro |
 | `/systems` `/experience` `/projects` `/skills` `/resume` `/contact` | Profile sections |
+
+Client knowledge source: `docs/client-work.md` + `src/lib/resume-knowledge.ts` → `clientWork`.
 
 ## Scripts
 

@@ -306,11 +306,103 @@ export const resumeKnowledge = {
     points: [
       "Ships production systems end-to-end: Binary Geckos (30+ healthcare/telehealth sites), Cosmiron (full-stack + AWS), CollegeXConnect (founder-owned platform).",
       "AI systems depth: RAG (CompanyBrain ~1.3s retrieval), desktop agents (Voice Assistant ~65% interaction reduction), ApplyAI screening, ClientScout lead discovery.",
+      "Client delivery: Aviva Beauty live Shopify OS 2.0 theme; Creator.co.ai AI reel automation pipelines; Connect Astro desktop work for founder Gautam.",
       "Cloud & reliability: AWS EC2/ECS/VPC redesign, GitHub Actions CI/CD, Stripe/webhooks/third-party integrations in production.",
       "Product ownership: founded CollegeXConnect with 3,000+ users and 250,000+ visitors — demonstrates ownership beyond ticket-level execution.",
       "Academic signal: B.Tech CSE, CGPA 8.6/10; GDSC Web Associate; 200+ DSA problems.",
     ],
   },
+  /**
+   * Verified client engagements (source of truth also in docs/client-work.md).
+   * Do not invent metrics, revenue, or unpublished URLs.
+   */
+  clientWork: [
+    {
+      id: "aviva-beauty",
+      client: "Aviva Beauty",
+      contactPerson: "Vanshika (Founder)",
+      category: "Shopify / D2C ecommerce",
+      liveUrl: "https://avivabeauty.in",
+      summary:
+        "Custom Shopify Online Store 2.0 theme for Aviva Beauty — brand-specific Indian D2C skincare storefront (not a stock Dawn skin): homepage storytelling, product discovery, cart offers, reviews, and checkout-ready UX.",
+      scope: [
+        "Custom homepage (hero, promos, featured products, actives, rituals, gift potli, retail banners)",
+        "Shop all / collections with product cards; PDP with gallery, offers, ingredients/FAQ, Judge.me reviews",
+        "About Us (brand + founder story), Contact, blog, cart drawer, search, 404",
+        "Cart drawer with Buy 2 @ ₹799 / Buy 3 @ ₹1149 progress tracker, coupon UX, upsells",
+        "Product image fade rotation; Watch & Shop video tiles with mute/unmute (one unmuted at a time)",
+        "Theme settings for Judge.me, Aviva Concierge chat, GA4, WhatsApp; Fastrr/Shiprocket checkout via store apps",
+      ],
+      tech: [
+        "Shopify OS 2.0",
+        "Liquid",
+        "theme.js",
+        "Judge.me",
+        "Fastrr / Shiprocket",
+        "GA4",
+        "WhatsApp",
+      ],
+      pitchingAngles: [
+        "D2C / ecommerce founders who need a custom Shopify theme + conversion-focused cart UX",
+        "Skincare / beauty brands wanting homepage storytelling + offers UX for India",
+        "Stores that need theme look/UX separate from Admin discount math (Fastrr / bundle apps)",
+      ],
+      notes:
+        "Theme guides offer UX; actual ₹799/₹1149 pricing must be configured in Shopify Discounts / Fastrr / bundle apps. Store support contacts on live site: +91 8595300801, Support@Avivabeauty.in, New Delhi.",
+    },
+    {
+      id: "creator-co-ai",
+      client: "Creator.co.ai",
+      contactPerson: "Rohit Bamola",
+      category: "AI content automation / Reels",
+      liveUrl: null as string | null,
+      summary:
+        "AI reel automation and workflow systems for Creator.co.ai — production pipelines that turn a topic into a finished short-form video with research, script, voice, avatar, V-roll, composite, and post-production.",
+      scope: [
+        "Built and iterated AI reel skill pipelines (including ai-reel-final-version-testing and related AI reel skills)",
+        "End-to-end flow: research → content strategy → hooks/script → duration-calibrated beat plan → storyboard → human approval",
+        "ElevenLabs TTS (Hinglish narration) + optional SFX/music; HeyGen avatar (Avatar V with IV fallback)",
+        "Google Flow direct-generation V-roll (9:16); HeyGen Studio avatar+V-roll composite; Cloudinary delivery",
+        "Phase 15b post-production: crossfades, planned SFX, optional ducked music bed, −14 LUFS mastering; optional split-screen where storytelling needs it",
+      ],
+      tech: [
+        "HeyGen",
+        "ElevenLabs",
+        "Google Flow",
+        "Cloudinary",
+        "ffmpeg",
+        "AI agents / skill pipelines",
+        "Hinglish scripting",
+      ],
+      pitchingAngles: [
+        "Creators, agencies, or founder-led brands that need repeatable Instagram Reel / short-form AI video automation",
+        "Teams that want agentic workflows (approval gates, QC, delivery) — not one-off ChatGPT prompts",
+        "AI / automation / content-ops problems similar to Rohit Bamola / Creator.co.ai work",
+      ],
+      notes:
+        "Do not invent follower counts, revenue, or unpublished live URLs for Creator.co.ai. Describe verified pipeline capabilities only.",
+    },
+    {
+      id: "connect-astro",
+      client: "Connect Astro",
+      contactPerson: "Gautam (Founder)",
+      category: "Desktop application",
+      liveUrl: null as string | null,
+      summary:
+        "Desktop project engagement for Connect Astro (founder: Gautam) — client desktop software work delivered by Shivanshu.",
+      scope: [
+        "Desktop application work for the Connect Astro product (founder engagement)",
+        "Client delivery aligned with desktop / Electron-style app experience (related to Shivanshu's desktop AI agent skill set)",
+      ],
+      tech: ["Desktop app", "Client delivery"],
+      pitchingAngles: [
+        "Founders needing desktop apps or desktop automation agents",
+        "Astrology / consumer desktop products seeking a builder who has shipped client desktop work",
+      ],
+      notes:
+        "Do not invent product URLs, metrics, or feature lists beyond: Connect Astro desktop work for founder Gautam. Expand when more verified docs are available.",
+    },
+  ],
 } as const;
 
 export type ResumeKnowledge = typeof resumeKnowledge;
@@ -370,6 +462,12 @@ export function buildKnowledgeContext(): string {
     `Cloud: ${k.skills.cloud.join(", ")}`,
     `Security: ${k.skills.security.join(", ")}`,
     `Languages: ${k.skills.languages.join(", ")}`,
+    "",
+    "CLIENT WORK:",
+    ...k.clientWork.map(
+      (c) =>
+        `- ${c.client} (${c.contactPerson}): ${c.category}. ${c.summary} ${c.liveUrl ? `URL: ${c.liveUrl}` : ""}`
+    ),
     "",
     "VALUE SIGNALS (for fit / compensation discussions):",
     ...k.valueSignals.points.map((p) => `- ${p}`),
