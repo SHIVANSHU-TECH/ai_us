@@ -46,7 +46,11 @@ export const metadata: Metadata = {
     images: ["/images/shivanshu.jpeg"],
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.jpg", type: "image/jpeg", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-touch-icon.jpg", sizes: "180x180" }],
   },
 };
 

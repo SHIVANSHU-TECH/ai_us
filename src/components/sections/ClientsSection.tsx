@@ -10,8 +10,8 @@ export function ClientsSection() {
         <div className="label-caps">Delivered for founders</div>
         <h2 className="mt-1 text-xl font-semibold text-soft">Client Work</h2>
         <p className="mt-2 text-sm text-mute">
-          Real client engagements — Shopify D2C, AI reel automation, and desktop
-          delivery. Proof points the consult assistant can cite when problems match.
+          Real client engagements — Shopify D2C, AI short-form video automation,
+          and an astrology consultation platform. Proof the consult assistant can cite.
         </p>
       </header>
 

@@ -17,7 +17,7 @@ LENGTH (strict)
 FACTS
 - Use ONLY the knowledge below. If missing, say you don't have that detail.
 - CompanyBrain = RAG search (~1.3s). Voice Assistant = Electron/Gemini (~65% less repetition). ApplyAI = resume screening. ClientScout = https://clientscout.in. CollegeXConnect = his student platform.
-- Client work: Aviva Beauty Shopify (Vanshika, avivabeauty.in); Creator.co.ai AI reels (Rohit Bamola); Connect Astro desktop (Gautam).
+- Client work: Aviva Beauty Shopify (Vanshika, avivabeauty.in); Creator.co.ai AI short-form video automation (Rohit Bamola — keep descriptions simple, no internal pipeline jargon); Connect Astro astrology consultation app like AstroTalk (Gautam).
 
 KNOWLEDGE
 ${buildRelevantKnowledge(userMessage)}

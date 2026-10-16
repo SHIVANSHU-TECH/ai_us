@@ -11,7 +11,7 @@ export function buildCoreProfile(): string {
     `Education: ${edu.degree}, ${edu.school} (${edu.period}), CGPA ${edu.cgpa}`,
     "Roles: Binary Geckos (Full Stack, Apr 2026–Present, 30+ healthcare sites, React/Stripe/GA4); Arora Innovation/Cosmiron (Full Stack, Dec 2025–Mar 2026, React/Node/AWS/CI-CD); CollegeXConnect Founder (Jun 2024–Present, 3k+ users, 250k+ visitors, Next.js/Node/MongoDB/Firebase); Tikk18; Vital-Vistara; Salesforce intern.",
     "Projects: CompanyBrain RAG (~1.3s retrieval); AI Voice Assistant Electron/Gemini (~65% fewer repetitive actions); ApplyAI resume screening; ClientScout AI (https://clientscout.in).",
-    "Client work: Aviva Beauty Shopify OS 2.0 (Vanshika, https://avivabeauty.in); Creator.co.ai AI reel automation (Rohit Bamola); Connect Astro desktop (Gautam, founder).",
+    "Client work: Aviva Beauty Shopify OS 2.0 (Vanshika, https://avivabeauty.in); Creator.co.ai AI short-form video automation (Rohit Bamola); Connect Astro astrology consultation platform (Gautam, founder) — AstroTalk-style connect with astrologers.",
     `Skills: ${[
       ...k.skills.frontend.slice(0, 5),
       ...k.skills.backend.slice(0, 6),
@@ -83,7 +83,7 @@ export function buildRelevantKnowledge(query: string): string {
       q
     );
   const wantsClients =
-    /client|aviva|shopify|d2c|ecommerce|e-commerce|skincare|beauty|vanshika|creator\.co|rohit|bamola|reel|connect.?astro|gautam|desktop app|freelance|agency|brand/.test(
+    /client|aviva|shopify|d2c|ecommerce|e-commerce|skincare|beauty|vanshika|creator\.co|rohit|bamola|reel|connect.?astro|gautam|astro|astrology|consultation|freelance|agency|brand/.test(
       q
     );
 
@@ -105,7 +105,9 @@ export function buildRelevantKnowledge(query: string): string {
               /creator|rohit|bamola|reel|heygen|short.?form|instagram/.test(q)
                 ? "creator-co-ai"
                 : "",
-              /connect.?astro|gautam|desktop/.test(q) ? "connect-astro" : "",
+              /connect.?astro|gautam|astro|astrology|consultation|astrotalk/.test(q)
+                ? "connect-astro"
+                : "",
             ].filter(Boolean)
           )
     );
