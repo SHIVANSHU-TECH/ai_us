@@ -116,20 +116,22 @@ export async function POST(req: Request) {
 
     const authHeader = req.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ")
-      ? authHeader.slice(7)
+      ? authHeader.slice(7).trim()
       : null;
+    const hasBearer = Boolean(idToken);
     const decoded =
-      idToken && isFirebaseAdminConfigured()
-        ? await verifyIdToken(idToken)
+      hasBearer && isFirebaseAdminConfigured()
+        ? await verifyIdToken(idToken!)
         : null;
 
-    // Soft paywall: 3 free anonymous messages, then Google login required.
+    // Soft paywall: only for truly anonymous requests (no Google Bearer token).
+    // Never lock out signed-in users if Admin verify is missing/misconfigured on Vercel.
     const cookieHeader = req.headers.get("cookie") || "";
     const freeCookieMatch = cookieHeader.match(
       new RegExp(`(?:^|;\\s*)${FREE_CHAT_COOKIE}=(\\d+)`)
     );
     const freeUsed = parseFreeCount(freeCookieMatch?.[1]);
-    if (!decoded && freeUsed >= FREE_CHAT_LIMIT) {
+    if (!hasBearer && freeUsed >= FREE_CHAT_LIMIT) {
       return NextResponse.json(
         {
           error:
@@ -307,9 +309,18 @@ export async function POST(req: Request) {
         : Math.max(0, FREE_CHAT_LIMIT - (freeUsed + 1)),
     });
 
-    if (!decoded) {
+    if (!hasBearer) {
       const nextCount = freeUsed + 1;
       res.cookies.set(FREE_CHAT_COOKIE, String(nextCount), {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+      });
+    } else if (decoded) {
+      // Clear anon counter once a verified Google session is chatting.
+      res.cookies.set(FREE_CHAT_COOKIE, "0", {
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",

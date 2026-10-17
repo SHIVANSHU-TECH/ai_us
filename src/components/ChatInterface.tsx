@@ -137,28 +137,34 @@ export function ChatInterface({
         .slice(0, -1)
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const token = idToken || (await refreshToken());
+      // Always prefer a fresh token when signed in (avoids stale/missing idToken race).
+      let token = user ? (await refreshToken()) || idToken : idToken;
+      if (user && !token) {
+        token = await user.getIdToken(true);
+      }
 
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          message: text,
-          history,
-          mode,
-          conversationId: user
-            ? `${user.uid}_${conversationId}`
-            : conversationId,
-          userMessageCount,
-          namePrompted: namePromptedLocal,
-          knownName: knownNameLocal,
-        }),
-      });
+      const postChat = (authToken: string | null) =>
+        fetch("/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            message: text,
+            history,
+            mode,
+            conversationId: user
+              ? `${user.uid}_${conversationId}`
+              : conversationId,
+            userMessageCount,
+            namePrompted: namePromptedLocal,
+            knownName: knownNameLocal,
+          }),
+        });
 
-      const data = (await res.json()) as {
+      let res = await postChat(token);
+      let data = (await res.json()) as {
         answer?: string;
         error?: string;
         code?: string;
@@ -169,22 +175,44 @@ export function ChatInterface({
         freeRemaining?: number | null;
       };
 
+      // Signed-in retry: refresh token once if server still rejects.
+      if (
+        user &&
+        (res.status === 401 || data.code === "LOGIN_REQUIRED")
+      ) {
+        const retryToken = await user.getIdToken(true);
+        res = await postChat(retryToken);
+        data = (await res.json()) as typeof data;
+      }
+
       if (!res.ok) {
         if (res.status === 401 || data.code === "LOGIN_REQUIRED") {
-          setLoginGate(true);
-          setAnonUsed(FREE_CHAT_LIMIT);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("usemeai_anon_used", String(FREE_CHAT_LIMIT));
+          // Only apply free-tier gate when the visitor is actually anonymous.
+          if (!user) {
+            setLoginGate(true);
+            setAnonUsed(FREE_CHAT_LIMIT);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("usemeai_anon_used", String(FREE_CHAT_LIMIT));
+            }
+            openAuthMenu();
+            setMessages((prev) => [
+              ...prev,
+              createMessage(
+                "assistant",
+                "You have used your 3 free messages. Please login with Google (top right) to continue the chat."
+              ),
+            ]);
+            setError("Please login with Google to continue the chat.");
+          } else {
+            setMessages((prev) => [
+              ...prev,
+              createMessage(
+                "assistant",
+                "You're signed in, but the session token could not be verified. Try signing out and connecting Google again."
+              ),
+            ]);
+            setError("Signed-in session could not be verified. Please reconnect Google.");
           }
-          openAuthMenu();
-          setMessages((prev) => [
-            ...prev,
-            createMessage(
-              "assistant",
-              "You have used your 3 free messages. Please login with Google (top right) to continue the chat."
-            ),
-          ]);
-          setError("Please login with Google to continue the chat.");
           return;
         }
         throw new Error("Request failed");
@@ -198,6 +226,12 @@ export function ChatInterface({
         }
         if (nextUsed >= FREE_CHAT_LIMIT) {
           setLoginGate(true);
+        }
+      } else {
+        setLoginGate(false);
+        setAnonUsed(0);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("usemeai_anon_used");
         }
       }
 
@@ -262,7 +296,11 @@ export function ChatInterface({
         <div className="min-w-0">
           <div className="label-caps">{subtitle}</div>
           <h3 className="mt-1 text-sm font-semibold text-soft">{title}</h3>
-          {!user && (
+          {user ? (
+            <p className="mt-1 font-mono text-[10px] leading-snug text-mint">
+              Signed in · unlimited chat
+            </p>
+          ) : (
             <p className="mt-1 font-mono text-[10px] leading-snug text-mute">
               {freeRemaining > 0
                 ? `${freeRemaining} free message${freeRemaining === 1 ? "" : "s"} left · then Google login`

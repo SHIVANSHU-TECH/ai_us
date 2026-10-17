@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { User } from "firebase/auth";
 import {
+  getClientAuth,
   isFirebaseClientConfigured,
   signInWithGooglePopup,
   signOutUser,
@@ -66,11 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshToken = useCallback(async () => {
-    if (!user) return null;
-    const token = await user.getIdToken(true);
+    // Read latest user from auth — avoids stale closure when called right after login.
+    const current = getClientAuth().currentUser;
+    if (!current) return null;
+    const token = await current.getIdToken(true);
     setIdToken(token);
     return token;
-  }, [user]);
+  }, []);
 
   const openAuthMenu = useCallback(() => {
     setAuthMenuNonce((n) => n + 1);
