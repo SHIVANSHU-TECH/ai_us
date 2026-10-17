@@ -35,8 +35,9 @@ cp .env.example .env.local
 3. Add authorized domains: `localhost`, your Vercel domain (`usemeai.vercel.app`).
 4. Optional Analytics: copy `measurementId` (`G-…`) into `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`.
 5. Firestore collections used: `users`, `conversations` (+ `messages` subcollection), `userInsights`, `toolRequests`.
+6. **Saving chats on Vercel:** set `FIREBASE_SERVICE_ACCOUNT_JSON` to the contents of `usemeai.json` (one line or base64). Run `node scripts/print-firebase-env.mjs` locally to generate it. Confirm with `GET /api/firebase-status` → `"ok": true`. Without this env, chats will not appear in Firestore. Enable Firestore in the Firebase Console if the database was never created.
 
-Google sign-in uses the standard **Firebase popup** (`authDomain` = `*.firebaseapp.com`). Anonymous users get **3 free messages**, then must sign in.
+Google sign-in uses the standard **Firebase popup** (`authDomain` = `*.firebaseapp.com`). Anonymous users get **3 free messages**, then must sign in. Only **signed-in** chats are written to Firestore.
 
 `package.json` includes an `allowScripts` policy so `sharp` and `unrs-resolver` install scripts can run on modern npm / Vercel.
 

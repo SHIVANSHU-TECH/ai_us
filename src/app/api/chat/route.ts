@@ -10,6 +10,7 @@ import { getSystemPrompt } from "@/lib/system-prompt";
 import { getConsultSystemPrompt } from "@/lib/consult-prompt";
 import { buildConversationDirectives } from "@/lib/prompt-extras";
 import {
+  getFirebaseAdminStatus,
   isFirebaseAdminConfigured,
   verifyIdToken,
 } from "@/lib/firebase/admin";
@@ -240,7 +241,21 @@ export async function POST(req: Request) {
     const relatedProjects = detectRelatedProjects(`${message}\n${answer}`);
 
     // Persist when signed in + admin configured
-    if (decoded?.uid && isFirebaseAdminConfigured()) {
+    let persisted = false;
+    let persistSkipReason: string | null = null;
+    const adminStatus = getFirebaseAdminStatus();
+
+    if (!hasBearer) {
+      persistSkipReason = "anonymous";
+    } else if (!adminStatus.configured) {
+      persistSkipReason = "admin_not_configured";
+      console.error(
+        "[api/chat] Firestore save skipped: set FIREBASE_SERVICE_ACCOUNT_JSON on the server"
+      );
+    } else if (!decoded?.uid) {
+      persistSkipReason = "token_verify_failed";
+      console.error("[api/chat] Firestore save skipped: ID token verify failed");
+    } else {
       const userMsg = createMessage("user", message);
       const assistantMsg = createMessage("assistant", answer);
       try {
@@ -284,14 +299,10 @@ export async function POST(req: Request) {
           recentTranscript: transcript,
         });
         await saveUserInsight(decoded.uid, insight);
+        persisted = true;
       } catch (persistErr) {
+        persistSkipReason = "persist_error";
         safeError("api/chat/persist", persistErr);
-      }
-    } else if (shouldAskName && decoded?.uid) {
-      try {
-        await markNamePrompted(decoded.uid);
-      } catch {
-        /* ignore */
       }
     }
 
@@ -307,6 +318,9 @@ export async function POST(req: Request) {
       freeRemaining: decoded
         ? null
         : Math.max(0, FREE_CHAT_LIMIT - (freeUsed + 1)),
+      // Safe debug flags (no secrets) so Network tab shows why Firestore is empty
+      persisted,
+      persistSkipReason,
     });
 
     if (!hasBearer) {

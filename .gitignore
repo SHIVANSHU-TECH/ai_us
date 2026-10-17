@@ -37,6 +37,7 @@ usemeai.json
 *-firebase-adminsdk*.json
 serviceAccount*.json
 credentials.json
+.vercel-firebase-sa.*
 *.p12
 *.pfx
 
