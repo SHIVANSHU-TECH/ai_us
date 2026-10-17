@@ -17,36 +17,40 @@ export function ContactSection() {
   ];
 
   return (
-    <section className="space-y-4">
-      <header>
+    <section className="w-full min-w-0 space-y-4">
+      <header className="min-w-0">
         <div className="label-caps">Outbound Channels</div>
-        <h2 className="mt-1 text-xl font-semibold text-soft">Contact</h2>
-        <p className="mt-2 text-sm text-mute">
+        <h2 className="mt-1 text-lg font-semibold text-soft sm:text-xl">Contact</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mute">
           Prefer email for recruiting conversations. All links are copyable.
         </p>
       </header>
 
-      <div className="grid gap-2">
+      <div className="grid min-w-0 gap-2">
         {items.map((item) => (
           <div
             key={item.key}
-            className="panel flex items-center justify-between gap-3 px-4 py-3"
+            className="panel flex min-w-0 items-start gap-2 px-3 py-3 sm:items-center sm:justify-between sm:gap-3 sm:px-4"
           >
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1 overflow-hidden">
               <div className="label-caps">{item.label}</div>
               <a
                 href={item.href}
                 target={item.href.startsWith("http") ? "_blank" : undefined}
-                rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="mt-0.5 inline-flex items-center gap-1 truncate font-mono text-xs text-cyanx hover:underline"
+                rel={
+                  item.href.startsWith("http") ? "noopener noreferrer" : undefined
+                }
+                className="mt-0.5 inline-flex max-w-full items-start gap-1 break-all font-mono text-[11px] leading-snug text-cyanx hover:underline sm:items-center sm:text-xs"
               >
-                {item.value}
-                {item.href.startsWith("http") && <ExternalLink size={11} />}
+                <span className="min-w-0">{item.value}</span>
+                {item.href.startsWith("http") && (
+                  <ExternalLink size={11} className="mt-0.5 shrink-0 sm:mt-0" />
+                )}
               </a>
             </div>
             <button
               type="button"
-              className="border border-line p-2 text-mute hover:text-mint"
+              className="shrink-0 border border-line p-2 text-mute hover:text-mint"
               aria-label={`Copy ${item.label}`}
               onClick={async () => {
                 await navigator.clipboard.writeText(item.value);

@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import clsx from "clsx";
 import { resumeKnowledge } from "@/lib/resume-knowledge";
 import { AuthButton } from "@/components/auth/AuthButton";
@@ -19,54 +20,6 @@ const NAV: { href: string; label: string }[] = [
   { href: "/contact", label: "Contact" },
 ];
 
-function NavLinks({
-  orientation,
-  onNavigate,
-}: {
-  orientation: "horizontal" | "vertical";
-  onNavigate?: () => void;
-}) {
-  const pathname = usePathname();
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
-  return (
-    <nav
-      className={clsx(
-        orientation === "horizontal"
-          ? "scrollbar-thin flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5 [-ms-overflow-style:none] [scrollbar-width:thin]"
-          : "flex flex-1 flex-col gap-1"
-      )}
-      aria-label="Primary"
-    >
-      {NAV.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={onNavigate}
-          className={clsx(
-            "shrink-0 snap-start font-mono text-[11px] uppercase tracking-[0.12em] transition-colors",
-            orientation === "horizontal"
-              ? "whitespace-nowrap border px-3 py-1.5"
-              : "flex items-center gap-2 px-3 py-2 text-left text-xs",
-            isActive(item.href)
-              ? "border-mint/35 bg-panel2 text-mint"
-              : "border-line text-mute hover:border-mint/30 hover:bg-panel2 hover:text-soft",
-            orientation === "vertical" && !isActive(item.href)
-              ? "border-transparent"
-              : null
-          )}
-        >
-          {orientation === "vertical" && (
-            <span className="text-cyanx/70">›</span>
-          )}
-          {item.label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
 export function SiteShell({
   title,
   modeLabel,
@@ -76,12 +29,40 @@ export function SiteShell({
   modeLabel: string;
   children: ReactNode;
 }) {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   return (
-    <div className="flex min-h-dvh min-h-screen flex-col md:flex-row">
-      {/* Desktop sidebar */}
-      <aside className="hidden w-[240px] shrink-0 flex-col border-r border-line bg-panel px-4 py-5 md:flex lg:w-[260px]">
+    <div className="flex min-h-dvh min-h-screen">
+      <button
+        type="button"
+        className="fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center border border-line bg-panel text-mint md:hidden"
+        aria-label={mobileOpen ? "Close menu" : "Open menu"}
+        onClick={() => setMobileOpen((v) => !v)}
+      >
+        {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+      </button>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-black/55 md:hidden"
+          aria-label="Close navigation overlay"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        className={clsx(
+          "fixed inset-y-0 left-0 z-40 flex w-[min(260px,85vw)] flex-col border-r border-line bg-panel px-4 py-5 transition-transform duration-200 md:static md:w-[240px] md:translate-x-0 lg:w-[260px]",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+      >
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center border border-mint/40 bg-panel2 font-mono text-sm font-semibold text-mint shadow-mint">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-mint/40 bg-panel2 font-mono text-sm font-semibold text-mint shadow-mint">
             SS
           </div>
           <div className="min-w-0">
@@ -92,7 +73,24 @@ export function SiteShell({
           </div>
         </div>
 
-        <NavLinks orientation="vertical" />
+        <nav className="flex flex-1 flex-col gap-1" aria-label="Primary">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 text-left font-mono text-xs uppercase tracking-[0.12em] transition-colors",
+                isActive(item.href)
+                  ? "border border-mint/35 bg-panel2 text-mint"
+                  : "border border-transparent text-mute hover:border-line hover:bg-panel2 hover:text-soft"
+              )}
+            >
+              <span className="text-cyanx/70">›</span>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
         <div className="mt-6 border-t border-line pt-4">
           <div className="label-caps mb-2">System Status</div>
@@ -104,8 +102,8 @@ export function SiteShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 border-b border-line bg-ink/95 backdrop-blur">
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 md:px-6 md:py-3">
+        <header className="sticky top-0 z-20 border-b border-line bg-ink/95 px-3 py-2.5 backdrop-blur sm:px-4 md:px-6 md:py-3">
+          <div className="flex items-center justify-between gap-2 pl-12 md:pl-0">
             <div className="min-w-0 flex-1">
               <div className="truncate font-mono text-[10px] text-mint sm:text-[11px]">
                 shivanshu@portfolio:~$
@@ -116,11 +114,6 @@ export function SiteShell({
               </h1>
             </div>
             <AuthButton />
-          </div>
-
-          {/* Mobile / tablet: horizontal scrolling nav */}
-          <div className="border-t border-line px-3 py-2 md:hidden">
-            <NavLinks orientation="horizontal" />
           </div>
         </header>
 
