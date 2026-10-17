@@ -36,7 +36,7 @@ cp .env.example .env.local
 4. Optional Analytics: copy `measurementId` (`G-…`) into `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`.
 5. Firestore collections used: `users`, `conversations` (+ `messages` subcollection), `userInsights`, `toolRequests`.
 
-Google sign-in uses the standard **Firebase popup** account chooser. Anonymous users get **3 free messages**, then must sign in.
+Google sign-in uses the standard **Firebase popup** (`authDomain` = `*.firebaseapp.com`). Anonymous users get **3 free messages**, then must sign in.
 
 `package.json` includes an `allowScripts` policy so `sharp` and `unrs-resolver` install scripts can run on modern npm / Vercel.
 
