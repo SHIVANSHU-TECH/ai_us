@@ -257,13 +257,13 @@ export function ChatInterface({
   };
 
   return (
-    <section className="panel flex min-h-[520px] flex-1 flex-col overflow-hidden md:min-h-[560px]">
-      <div className="flex items-center justify-between border-b border-line px-4 py-3">
-        <div>
+    <section className="panel flex min-h-[min(70dvh,520px)] flex-1 flex-col overflow-hidden sm:min-h-[520px] md:min-h-[560px]">
+      <div className="flex items-start justify-between gap-2 border-b border-line px-3 py-2.5 sm:items-center sm:px-4 sm:py-3">
+        <div className="min-w-0">
           <div className="label-caps">{subtitle}</div>
           <h3 className="mt-1 text-sm font-semibold text-soft">{title}</h3>
           {!user && (
-            <p className="mt-1 font-mono text-[10px] text-mute">
+            <p className="mt-1 font-mono text-[10px] leading-snug text-mute">
               {freeRemaining > 0
                 ? `${freeRemaining} free message${freeRemaining === 1 ? "" : "s"} left · then Google login`
                 : "Free messages used · login with Google to continue"}
@@ -274,10 +274,10 @@ export function ChatInterface({
           type="button"
           onClick={clearChat}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 border border-line px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-mute hover:border-mint/40 hover:text-mint disabled:opacity-40"
+          className="inline-flex shrink-0 items-center gap-1.5 border border-line px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-mute hover:border-mint/40 hover:text-mint disabled:opacity-40 sm:px-2.5"
         >
           <Eraser size={12} />
-          Clear
+          <span className="hidden sm:inline">Clear</span>
         </button>
       </div>
 
@@ -386,14 +386,14 @@ export function ChatInterface({
 
       <div className="border-t border-line px-3 py-3 md:px-4">
         <div className="label-caps mb-2">Suggested prompts</div>
-        <div className="mb-3 flex flex-wrap gap-1.5">
+        <div className="scrollbar-thin mb-3 flex snap-x snap-mandatory gap-1.5 overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch]">
           {prompts.map((prompt) => (
             <button
               key={prompt}
               type="button"
               disabled={loading || needsLogin}
               onClick={() => void submitMessage(prompt)}
-              className="max-w-full truncate border border-line bg-ink/40 px-2 py-1 font-mono text-[10px] text-mute transition-colors hover:border-mint/40 hover:text-mint disabled:opacity-40"
+              className="max-w-[220px] shrink-0 snap-start truncate border border-line bg-ink/40 px-2.5 py-1.5 font-mono text-[10px] text-mute transition-colors hover:border-mint/40 hover:text-mint disabled:opacity-40 sm:max-w-[280px]"
               title={prompt}
             >
               {prompt}
@@ -434,12 +434,12 @@ export function ChatInterface({
                 ? "Login with Google to continue chatting…"
                 : placeholder
             }
-            className="min-h-[44px] w-full resize-none border border-line bg-ink/50 px-3 py-2.5 text-sm text-soft placeholder:text-mute/70 disabled:opacity-50"
+            className="min-h-[44px] w-full min-w-0 resize-none border border-line bg-ink/50 px-3 py-2.5 text-sm text-soft placeholder:text-mute/70 disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={loading || !input.trim() || needsLogin}
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 border border-mint/40 bg-mint/10 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-mint hover:bg-mint/20 disabled:opacity-40"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 border border-mint/40 bg-mint/10 px-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-mint hover:bg-mint/20 disabled:opacity-40 sm:px-3"
             aria-label="Send message"
           >
             {loading ? (
@@ -447,7 +447,7 @@ export function ChatInterface({
             ) : (
               <SendHorizontal size={14} />
             )}
-            Send
+            <span className="hidden sm:inline">Send</span>
           </button>
         </form>
       </div>

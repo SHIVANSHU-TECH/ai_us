@@ -19,13 +19,13 @@ export function HomeView() {
   }, [searchParams, router]);
 
   return (
-    <>
+    <div className="flex flex-col gap-4 sm:gap-5">
       <ProfilePanel />
       <ChatInterface
         mode="resume"
         externalPrompt={externalPrompt}
         onExternalPromptConsumed={() => setExternalPrompt(null)}
       />
-    </>
+    </div>
   );
 }

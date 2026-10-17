@@ -12,27 +12,20 @@ import {
 import type { User } from "firebase/auth";
 import {
   isFirebaseClientConfigured,
-  signInWithGoogle,
-  signInWithGoogleIdToken,
+  signInWithGooglePopup,
   signOutUser,
   subscribeAuth,
 } from "@/lib/firebase/client";
-import { rememberGoogleAccount } from "@/lib/firebase/saved-accounts";
-
-export interface SignInOptions {
-  loginHint?: string;
-  pickAccount?: boolean;
-}
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   configured: boolean;
   idToken: string | null;
-  signIn: (options?: SignInOptions) => Promise<void>;
-  signInWithIdToken: (idToken: string) => Promise<void>;
+  signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
+  /** Triggers Firebase Google popup (used by chat login gate). */
   openAuthMenu: () => void;
   authMenuNonce: number;
 }
@@ -54,11 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = subscribeAuth(async (next) => {
       setUser(next);
       if (next) {
-        rememberGoogleAccount({
-          email: next.email,
-          displayName: next.displayName,
-          photoURL: next.photoURL,
-        });
         const token = await next.getIdToken();
         setIdToken(token);
       } else {
@@ -69,12 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, [configured]);
 
-  const signIn = useCallback(async (options?: SignInOptions) => {
-    await signInWithGoogle(options);
-  }, []);
-
-  const signInWithIdToken = useCallback(async (idTokenValue: string) => {
-    await signInWithGoogleIdToken(idTokenValue);
+  const signIn = useCallback(async () => {
+    await signInWithGooglePopup();
   }, []);
 
   const signOut = useCallback(async () => {
@@ -99,7 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configured,
       idToken,
       signIn,
-      signInWithIdToken,
       signOut,
       refreshToken,
       openAuthMenu,
@@ -111,7 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configured,
       idToken,
       signIn,
-      signInWithIdToken,
       signOut,
       refreshToken,
       openAuthMenu,

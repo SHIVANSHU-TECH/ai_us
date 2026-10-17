@@ -70,6 +70,10 @@ body {
   box-shadow: 0 0 0 1px rgba(103, 221, 181, 0.25), 0 0 24px var(--glow);
 }
 
+.scrollbar-thin {
+  scrollbar-gutter: stable;
+}
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -86,6 +90,13 @@ body {
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #314557;
+}
+
+@media (max-width: 767px) {
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+  }
 }
 
 .prose-chat {
