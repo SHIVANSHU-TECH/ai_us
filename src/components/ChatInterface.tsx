@@ -21,6 +21,7 @@ import {
 import { formatAssistantText } from "@/lib/format";
 import { ToolRequestForm } from "@/components/chat/ToolRequestForm";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { FREE_CHAT_LIMIT } from "@/lib/free-chat";
 import clsx from "clsx";
 
 export type ChatMode = "resume" | "consult";
@@ -46,7 +47,7 @@ export function ChatInterface({
   externalPrompt,
   onExternalPromptConsumed,
 }: ChatInterfaceProps) {
-  const { idToken, refreshToken, user } = useAuth();
+  const { idToken, refreshToken, user, openAuthMenu } = useAuth();
   const initial =
     mode === "consult" ? CONSULT_INITIAL_MESSAGE : INITIAL_ASSISTANT_MESSAGE;
   const prompts =
@@ -75,7 +76,12 @@ export function ChatInterface({
   const [toolFormDefault, setToolFormDefault] = useState("");
   const [namePromptedLocal, setNamePromptedLocal] = useState(false);
   const [knownNameLocal, setKnownNameLocal] = useState<string | null>(null);
+  const [anonUsed, setAnonUsed] = useState(0);
+  const [loginGate, setLoginGate] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const freeRemaining = Math.max(0, FREE_CHAT_LIMIT - anonUsed);
+  const needsLogin = !user && anonUsed >= FREE_CHAT_LIMIT;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -83,7 +89,19 @@ export function ChatInterface({
       localStorage.getItem(`usemeai_name_prompted_${mode}`) === "1"
     );
     setKnownNameLocal(localStorage.getItem(`usemeai_known_name_${mode}`));
+    const used = Number(localStorage.getItem("usemeai_anon_used") || "0");
+    setAnonUsed(Number.isFinite(used) ? Math.max(0, Math.floor(used)) : 0);
   }, [mode]);
+
+  useEffect(() => {
+    if (user) {
+      setLoginGate(false);
+      setAnonUsed(0);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("usemeai_anon_used");
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,8 +111,18 @@ export function ChatInterface({
     const text = raw.trim();
     if (!text || loading) return;
 
+    if (!user && anonUsed >= FREE_CHAT_LIMIT) {
+      setLoginGate(true);
+      openAuthMenu();
+      setError(
+        "Please login with Google to continue the chat. You have used your 3 free messages."
+      );
+      return;
+    }
+
     setError(null);
     setRelated([]);
+    setLoginGate(false);
     const userMsg = createMessage("user", text);
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
@@ -133,14 +161,44 @@ export function ChatInterface({
       const data = (await res.json()) as {
         answer?: string;
         error?: string;
+        code?: string;
         relatedProjects?: string[];
         showToolForm?: boolean;
         knownName?: string | null;
         namePrompted?: boolean;
+        freeRemaining?: number | null;
       };
 
       if (!res.ok) {
+        if (res.status === 401 || data.code === "LOGIN_REQUIRED") {
+          setLoginGate(true);
+          setAnonUsed(FREE_CHAT_LIMIT);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("usemeai_anon_used", String(FREE_CHAT_LIMIT));
+          }
+          openAuthMenu();
+          setMessages((prev) => [
+            ...prev,
+            createMessage(
+              "assistant",
+              "You have used your 3 free messages. Please login with Google (top right) to continue the chat."
+            ),
+          ]);
+          setError("Please login with Google to continue the chat.");
+          return;
+        }
         throw new Error("Request failed");
+      }
+
+      if (!user) {
+        const nextUsed = anonUsed + 1;
+        setAnonUsed(nextUsed);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("usemeai_anon_used", String(nextUsed));
+        }
+        if (nextUsed >= FREE_CHAT_LIMIT) {
+          setLoginGate(true);
+        }
       }
 
       setMessages((prev) => [
@@ -206,7 +264,9 @@ export function ChatInterface({
           <h3 className="mt-1 text-sm font-semibold text-soft">{title}</h3>
           {!user && (
             <p className="mt-1 font-mono text-[10px] text-mute">
-              Connect Google (top right) so chats sync for follow-up.
+              {freeRemaining > 0
+                ? `${freeRemaining} free message${freeRemaining === 1 ? "" : "s"} left · then Google login`
+                : "Free messages used · login with Google to continue"}
             </p>
           )}
         </div>
@@ -288,6 +348,22 @@ export function ChatInterface({
           </div>
         )}
 
+        {(loginGate || needsLogin) && !user && (
+          <div className="max-w-[92%] border border-mint/35 bg-mint/5 px-3 py-3 md:max-w-[85%]">
+            <p className="text-sm text-soft">
+              You have used your {FREE_CHAT_LIMIT} free messages. Please login
+              with Google to continue the chat.
+            </p>
+            <button
+              type="button"
+              onClick={() => openAuthMenu()}
+              className="mt-2 inline-flex items-center gap-1.5 border border-mint/40 bg-mint/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-mint hover:bg-mint/20"
+            >
+              Connect Google
+            </button>
+          </div>
+        )}
+
         {loading && (
           <div className="flex items-center gap-2 px-1 font-mono text-xs text-mute">
             <Loader2 size={14} className="animate-spin text-mint" />
@@ -315,7 +391,7 @@ export function ChatInterface({
             <button
               key={prompt}
               type="button"
-              disabled={loading}
+              disabled={loading || needsLogin}
               onClick={() => void submitMessage(prompt)}
               className="max-w-full truncate border border-line bg-ink/40 px-2 py-1 font-mono text-[10px] text-mute transition-colors hover:border-mint/40 hover:text-mint disabled:opacity-40"
               title={prompt}
@@ -345,7 +421,7 @@ export function ChatInterface({
             id={`chat-input-${mode}`}
             rows={2}
             value={input}
-            disabled={loading}
+            disabled={loading || needsLogin}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -353,12 +429,16 @@ export function ChatInterface({
                 void submitMessage(input);
               }
             }}
-            placeholder={placeholder}
+            placeholder={
+              needsLogin
+                ? "Login with Google to continue chatting…"
+                : placeholder
+            }
             className="min-h-[44px] w-full resize-none border border-line bg-ink/50 px-3 py-2.5 text-sm text-soft placeholder:text-mute/70 disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={loading || !input.trim()}
+            disabled={loading || !input.trim() || needsLogin}
             className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 border border-mint/40 bg-mint/10 px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-mint hover:bg-mint/20 disabled:opacity-40"
             aria-label="Send message"
           >

@@ -33,9 +33,11 @@ cp .env.example .env.local
 1. Keep `usemeai.json` **private** (gitignored). Never commit it.
 2. In Firebase Console for project `example-69600`: enable **Authentication → Google**, add a **Web app**, copy the web config into `.env.local`.
 3. Add authorized domains: `localhost`, your Vercel domain (`usemeai.vercel.app`).
-4. Firestore collections used: `users`, `conversations` (+ `messages` subcollection), `userInsights`, `toolRequests`.
+4. Optional for compact Google UI: copy **Web client ID** from Authentication → Google into `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+5. Optional Analytics: copy `measurementId` (`G-…`) into `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`.
+6. Firestore collections used: `users`, `conversations` (+ `messages` subcollection), `userInsights`, `toolRequests`.
 
-Google sign-in uses a **popup account chooser** (not a full-page redirect), ChatGPT-style.
+Connect Google opens an **inline account menu** under the button (saved accounts + compact GIS when Web client ID is set). Anonymous users get **3 free messages**, then must sign in.
 
 `package.json` includes an `allowScripts` policy so `sharp` and `unrs-resolver` install scripts can run on modern npm / Vercel.
 
