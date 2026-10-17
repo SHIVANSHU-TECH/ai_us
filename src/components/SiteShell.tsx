@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import clsx from "clsx";
 import { resumeKnowledge } from "@/lib/resume-knowledge";
+import { AuthButton } from "@/components/auth/AuthButton";
 
 const NAV: { href: string; label: string }[] = [
   { href: "/", label: "Home" },
@@ -106,14 +107,13 @@ export function SiteShell({
             <div>
               <div className="font-mono text-[11px] text-mint">
                 shivanshu@portfolio:~$
+                <span className="ml-2 text-mute">mode/{modeLabel}</span>
               </div>
               <h1 className="mt-0.5 text-lg font-semibold tracking-tight text-soft md:text-xl">
                 {title}
               </h1>
             </div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-mute">
-              mode/{modeLabel}
-            </div>
+            <AuthButton />
           </div>
         </header>
 

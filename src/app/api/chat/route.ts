@@ -8,6 +8,26 @@ import {
 } from "@/lib/chat";
 import { getSystemPrompt } from "@/lib/system-prompt";
 import { getConsultSystemPrompt } from "@/lib/consult-prompt";
+import { buildConversationDirectives } from "@/lib/prompt-extras";
+import {
+  isFirebaseAdminConfigured,
+  verifyIdToken,
+} from "@/lib/firebase/admin";
+import {
+  appendConversationMessages,
+  ensureUserProfile,
+  getUserChatMeta,
+  markNamePrompted,
+  saveUserInsight,
+  setKnownName,
+} from "@/lib/chat-persistence";
+import {
+  buildInsightSummary,
+  extractPossibleName,
+  shouldShowToolForm,
+} from "@/lib/insights";
+import { createMessage } from "@/lib/chat";
+import { safeError } from "@/lib/safe-log";
 
 export const runtime = "nodejs";
 
@@ -24,6 +44,10 @@ interface ChatRequestBody {
   message?: unknown;
   history?: unknown;
   mode?: unknown;
+  conversationId?: unknown;
+  userMessageCount?: unknown;
+  namePrompted?: unknown;
+  knownName?: unknown;
 }
 
 function isConfigured(): boolean {
@@ -45,8 +69,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "AI provider is not configured. Add GROQ_API_KEY to your environment (see .env.example), then restart the server.",
-          code: "MISSING_API_KEY",
+            "The AI service is temporarily unavailable. Please try again shortly.",
         },
         { status: 503 }
       );
@@ -71,6 +94,63 @@ export async function POST(req: Request) {
       );
     }
 
+    const conversationId =
+      typeof body.conversationId === "string" && body.conversationId.trim()
+        ? body.conversationId.trim().slice(0, 80)
+        : `anon-${Date.now()}`;
+
+    const userMessageCount = Math.max(
+      1,
+      Math.min(
+        200,
+        typeof body.userMessageCount === "number"
+          ? Math.floor(body.userMessageCount)
+          : 1
+      )
+    );
+
+    const authHeader = req.headers.get("authorization") || "";
+    const idToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    const decoded =
+      idToken && isFirebaseAdminConfigured()
+        ? await verifyIdToken(idToken)
+        : null;
+
+    let knownName: string | null =
+      typeof body.knownName === "string" && body.knownName.trim()
+        ? body.knownName.trim().slice(0, 40)
+        : null;
+    let namePrompted = body.namePrompted === true;
+
+    if (decoded?.uid && isFirebaseAdminConfigured()) {
+      await ensureUserProfile({
+        uid: decoded.uid,
+        email: decoded.email || null,
+        displayName: decoded.name || null,
+        photoURL: (decoded as { picture?: string }).picture || null,
+      });
+      const meta = await getUserChatMeta(decoded.uid);
+      if (meta.knownName) knownName = meta.knownName;
+      if (meta.namePrompted) namePrompted = true;
+    }
+
+    const maybeName = extractPossibleName(message, namePrompted);
+    if (maybeName) {
+      knownName = maybeName;
+      namePrompted = true;
+      if (decoded?.uid) {
+        await setKnownName(decoded.uid, maybeName);
+      }
+    }
+
+    const shouldAskName =
+      !knownName &&
+      !namePrompted &&
+      userMessageCount >= 3 &&
+      userMessageCount <= 10;
+
     const rawHistory = Array.isArray(body.history) ? body.history : [];
     const history = boundHistory(
       rawHistory.map((item) => {
@@ -82,10 +162,17 @@ export async function POST(req: Request) {
       })
     ).slice(-6);
 
-    const system =
+    const baseSystem =
       mode === "consult"
         ? getConsultSystemPrompt()
         : getSystemPrompt(message);
+
+    const system = `${baseSystem}\n${buildConversationDirectives({
+      knownName,
+      userMessageCount,
+      mode,
+      shouldAskName,
+    })}`;
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const messages = [
@@ -108,7 +195,7 @@ export async function POST(req: Request) {
         const completion = await groq.chat.completions.create({
           model,
           temperature: mode === "consult" ? 0.45 : 0.4,
-          max_tokens: mode === "consult" ? 380 : 320,
+          max_tokens: mode === "consult" ? 420 : 360,
           messages,
         });
         answer = extractAnswer(completion);
@@ -117,31 +204,90 @@ export async function POST(req: Request) {
         break;
       } catch (err) {
         lastError = err;
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error(`[api/chat] model ${model} failed:`, msg.slice(0, 200));
+        safeError("api/chat", err);
       }
     }
 
     if (lastError || !answer) {
-      throw lastError || new Error("All Groq chat models failed.");
+      throw lastError || new Error("Chat provider unavailable");
     }
 
+    const showToolForm = shouldShowToolForm(message);
+    const relatedProjects = detectRelatedProjects(`${message}\n${answer}`);
+
+    // Persist when signed in + admin configured
+    if (decoded?.uid && isFirebaseAdminConfigured()) {
+      const userMsg = createMessage("user", message);
+      const assistantMsg = createMessage("assistant", answer);
+      try {
+        if (shouldAskName) {
+          await markNamePrompted(decoded.uid);
+        }
+
+        await appendConversationMessages({
+          uid: decoded.uid,
+          conversationId,
+          mode,
+          messages: [
+            {
+              id: userMsg.id,
+              role: "user",
+              content: message,
+              createdAt: userMsg.createdAt,
+            },
+            {
+              id: assistantMsg.id,
+              role: "assistant",
+              content: answer,
+              createdAt: assistantMsg.createdAt,
+            },
+          ],
+        });
+
+        const transcript = [
+          ...history,
+          { role: "user" as const, content: message },
+          { role: "assistant" as const, content: answer },
+        ]
+          .map((m) => `${m.role}: ${m.content}`)
+          .join("\n");
+
+        const insight = await buildInsightSummary({
+          email: decoded.email || null,
+          displayName: decoded.name || null,
+          knownName,
+          messageCount: userMessageCount,
+          recentTranscript: transcript,
+        });
+        await saveUserInsight(decoded.uid, insight);
+      } catch (persistErr) {
+        safeError("api/chat/persist", persistErr);
+      }
+    } else if (shouldAskName && decoded?.uid) {
+      try {
+        await markNamePrompted(decoded.uid);
+      } catch {
+        /* ignore */
+      }
+    }
+
+    // Never return provider/model internals or secrets to the browser.
+    void usedModel;
     return NextResponse.json({
       answer,
-      model: usedModel,
       mode,
-      relatedProjects: detectRelatedProjects(`${message}\n${answer}`),
+      relatedProjects,
+      showToolForm,
+      knownName,
+      namePrompted: namePrompted || shouldAskName,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown provider error";
-    console.error("[api/chat] provider error:", message.slice(0, 200));
+    safeError("api/chat", error);
 
     return NextResponse.json(
       {
         error:
           "The AI service is temporarily unavailable. Please try again in a moment, or email shivanshushukla2022@gmail.com.",
-        code: "PROVIDER_ERROR",
       },
       { status: 502 }
     );

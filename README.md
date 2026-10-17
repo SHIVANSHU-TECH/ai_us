@@ -26,6 +26,16 @@ cp .env.example .env.local
 | `GROQ_API_KEY` | Yes | API key from [console.groq.com/keys](https://console.groq.com/keys) |
 | `GROQ_MODEL` | No | Defaults to `openai/gpt-oss-20b` (fast). Optional: `openai/gpt-oss-120b`, `qwen/qwen3.8-27b` |
 | `NEXT_TELEMETRY_DISABLED` | No | Set to `1` on Vercel (also set in `vercel.json`) |
+| `NEXT_PUBLIC_FIREBASE_*` | Yes (for Google login) | Web app config from Firebase Console → Project settings |
+| `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON` | Yes (for saving chats) | Local `usemeai.json` path, or JSON string on Vercel |
+
+### Firebase setup
+1. Keep `usemeai.json` **private** (gitignored). Never commit it.
+2. In Firebase Console for project `example-69600`: enable **Authentication → Google**, add a **Web app**, copy the web config into `.env.local`.
+3. Add authorized domains: `localhost`, your Vercel domain (`usemeai.vercel.app`).
+4. Firestore collections used: `users`, `conversations` (+ `messages` subcollection), `userInsights`, `toolRequests`.
+
+Google sign-in uses a **popup account chooser** (not a full-page redirect), ChatGPT-style.
 
 `package.json` includes an `allowScripts` policy so `sharp` and `unrs-resolver` install scripts can run on modern npm / Vercel.
 

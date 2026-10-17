@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
   Copy,
@@ -19,6 +19,8 @@ import {
   CONSULT_SUGGESTED_PROMPTS,
 } from "@/lib/consult-prompt";
 import { formatAssistantText } from "@/lib/format";
+import { ToolRequestForm } from "@/components/chat/ToolRequestForm";
+import { useAuth } from "@/components/auth/AuthProvider";
 import clsx from "clsx";
 
 export type ChatMode = "resume" | "consult";
@@ -29,11 +31,22 @@ interface ChatInterfaceProps {
   onExternalPromptConsumed?: () => void;
 }
 
+function getOrCreateConversationId(mode: ChatMode): string {
+  if (typeof window === "undefined") return `${mode}-ssr`;
+  const key = `usemeai_conversation_${mode}`;
+  const existing = localStorage.getItem(key);
+  if (existing) return existing;
+  const id = `${mode}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  localStorage.setItem(key, id);
+  return id;
+}
+
 export function ChatInterface({
   mode = "resume",
   externalPrompt,
   onExternalPromptConsumed,
 }: ChatInterfaceProps) {
+  const { idToken, refreshToken, user } = useAuth();
   const initial =
     mode === "consult" ? CONSULT_INITIAL_MESSAGE : INITIAL_ASSISTANT_MESSAGE;
   const prompts =
@@ -48,6 +61,8 @@ export function ChatInterface({
       ? "Describe your business, flow, hiring need, or tech problem…"
       : "Ask about projects, architecture, Binary Geckos, JD fit…";
 
+  const conversationId = useMemo(() => getOrCreateConversationId(mode), [mode]);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     createMessage("assistant", initial),
   ]);
@@ -56,11 +71,23 @@ export function ChatInterface({
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [related, setRelated] = useState<string[]>([]);
+  const [showToolForm, setShowToolForm] = useState(false);
+  const [toolFormDefault, setToolFormDefault] = useState("");
+  const [namePromptedLocal, setNamePromptedLocal] = useState(false);
+  const [knownNameLocal, setKnownNameLocal] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    setNamePromptedLocal(
+      localStorage.getItem(`usemeai_name_prompted_${mode}`) === "1"
+    );
+    setKnownNameLocal(localStorage.getItem(`usemeai_known_name_${mode}`));
+  }, [mode]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, showToolForm]);
 
   const submitMessage = async (raw: string) => {
     const text = raw.trim();
@@ -69,30 +96,51 @@ export function ChatInterface({
     setError(null);
     setRelated([]);
     const userMsg = createMessage("user", text);
-    setMessages((prev) => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput("");
     setLoading(true);
 
+    const userMessageCount = nextMessages.filter((m) => m.role === "user").length;
+
     try {
-      const history = [...messages, userMsg]
+      const history = nextMessages
         .filter((m) => !(m.role === "assistant" && m.content === initial))
         .slice(0, -1)
         .map((m) => ({ role: m.role, content: m.content }));
 
+      const token = idToken || (await refreshToken());
+
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history, mode }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          message: text,
+          history,
+          mode,
+          conversationId: user
+            ? `${user.uid}_${conversationId}`
+            : conversationId,
+          userMessageCount,
+          namePrompted: namePromptedLocal,
+          knownName: knownNameLocal,
+        }),
       });
 
       const data = (await res.json()) as {
         answer?: string;
         error?: string;
         relatedProjects?: string[];
+        showToolForm?: boolean;
+        knownName?: string | null;
+        namePrompted?: boolean;
       };
 
       if (!res.ok) {
-        throw new Error(data.error || "Request failed");
+        throw new Error("Request failed");
       }
 
       setMessages((prev) => [
@@ -100,18 +148,31 @@ export function ChatInterface({
         createMessage("assistant", data.answer || "No response."),
       ]);
       setRelated(data.relatedProjects || []);
-    } catch (err) {
+
+      if (data.namePrompted || data.knownName) {
+        setNamePromptedLocal(true);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`usemeai_name_prompted_${mode}`, "1");
+        }
+      }
+      if (data.knownName) {
+        setKnownNameLocal(data.knownName);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`usemeai_known_name_${mode}`, data.knownName);
+        }
+      }
+
+      if (data.showToolForm) {
+        setToolFormDefault(text.slice(0, 120));
+        setShowToolForm(true);
+      }
+    } catch {
       const msg =
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again.";
+        "Something went wrong. Please try again, or email shivanshushukla2022@gmail.com.";
       setError(msg);
       setMessages((prev) => [
         ...prev,
-        createMessage(
-          "assistant",
-          `I couldn't complete that request.\n\n${msg}\n\nYou can email shivanshushukla2022@gmail.com directly.`
-        ),
+        createMessage("assistant", `I couldn't complete that request.\n\n${msg}`),
       ]);
     } finally {
       setLoading(false);
@@ -131,6 +192,10 @@ export function ChatInterface({
     setMessages([createMessage("assistant", initial)]);
     setError(null);
     setRelated([]);
+    setShowToolForm(false);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(`usemeai_conversation_${mode}`);
+    }
   };
 
   return (
@@ -139,6 +204,11 @@ export function ChatInterface({
         <div>
           <div className="label-caps">{subtitle}</div>
           <h3 className="mt-1 text-sm font-semibold text-soft">{title}</h3>
+          {!user && (
+            <p className="mt-1 font-mono text-[10px] text-mute">
+              Connect Google (top right) so chats sync for follow-up.
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -200,6 +270,23 @@ export function ChatInterface({
             </div>
           </div>
         ))}
+
+        {showToolForm && (
+          <div className="max-w-[92%] md:max-w-[85%]">
+            <ToolRequestForm
+              defaultTools={toolFormDefault}
+              onSubmitted={() => {
+                setMessages((prev) => [
+                  ...prev,
+                  createMessage(
+                    "assistant",
+                    "Got it — your tool access request is saved. Shivanshu will review and follow up."
+                  ),
+                ]);
+              }}
+            />
+          </div>
+        )}
 
         {loading && (
           <div className="flex items-center gap-2 px-1 font-mono text-xs text-mute">
