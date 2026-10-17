@@ -5,7 +5,7 @@
  */
 
 export const resumeKnowledge = {
-  version: "2026-10-15",
+  version: "2026-10-17",
   profile: {
     name: "Shivanshu Shukla",
     title: "SOFTWARE ENGINEER / FULL STACK / AI / CLOUD",
@@ -222,6 +222,202 @@ export const resumeKnowledge = {
       sourceNote:
         "ClientScout is a verified public product built by Shivanshu (live at clientscout.in). Detailed employer-style bullets are not listed on the resume PDF; describe only documented product capabilities.",
     },
+    {
+      id: "alphafind",
+      number: "05",
+      title: "AlphaFind",
+      subtitle: "Alphabet Prediction / Demo Betting Game",
+      year: "2025–2026",
+      problem:
+        "Need a fun, demo-safe prediction game with fair randomness and Firebase-backed accounts — without real on-chain money.",
+      approach:
+        "Casino-style alphabet game: bet demo USDC on vowel / consonant / exact letter, with Firebase Auth + Realtime Database and an Express API.",
+      workflow: [
+        "Sign in → Place demo bet → Provably fair HMAC-SHA256 roll → Payout demo balance",
+      ],
+      architectureNotes: [
+        "React + Vite frontend; Express backend; Firebase Auth + Realtime Database.",
+        "Provably fair HMAC-SHA256 RNG; starting demo balance 1000.",
+        "Multipliers: VOWEL 4.8x, CONSONANT 1.18x, EXACT 24x — balances are in-app demo coins, not real USDC.",
+      ],
+      tech: ["React", "Vite", "Express", "Firebase Auth", "Realtime Database"],
+      outcomes: [
+        "Playable demo betting loop with fair RNG and Firebase persistence.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder alpha-find). Demo coins only — never claim real crypto or on-chain USDC.",
+    },
+    {
+      id: "automate-work",
+      number: "06",
+      title: "Automate Work",
+      subtitle: "Agency Website Analyzer → CRM → AI Proposals",
+      year: "2025–2026",
+      problem:
+        "Agencies need one workspace to analyze prospect sites, manage CRM, draft AI proposals, and produce social/outreach assets.",
+      approach:
+        "End-to-end agency monorepo: prospect site analysis, CRM, AI proposals, LinkedIn/X generators, and URL shortener.",
+      workflow: [
+        "Prospect URL → Analyze (Playwright/Lighthouse) → CRM → AI proposal → Export / social drafts",
+      ],
+      architectureNotes: [
+        "npm monorepo: Next.js 15 web + Express API; Firestore persistence; Groq for AI; Playwright + Lighthouse for analysis.",
+        "User-scoped Firestore data; JWT after Firebase Auth; export PDF/DOCX/HTML/MD.",
+        "Older docs mentioning SQLite are outdated — persistence is Firestore.",
+      ],
+      tech: [
+        "Next.js 15",
+        "Express",
+        "Firestore",
+        "Firebase Auth",
+        "Groq",
+        "Playwright",
+        "Lighthouse",
+      ],
+      outcomes: [
+        "Unified agency workspace from site analysis through proposal export and social drafts.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder Automation-Only / brand Automate Work). npm name may appear as ai-proposal-generator.",
+    },
+    {
+      id: "browsy",
+      number: "07",
+      title: "Browsy",
+      subtitle: "Local Playwright Outreach Agent (IG + LinkedIn)",
+      year: "2025–2026",
+      problem:
+        "Teams want visible-browser outreach on Instagram and LinkedIn without private APIs or CAPTCHA solvers.",
+      approach:
+        "Local Playwright agent that drives a real Chrome UI for Instagram DMs, LinkedIn connect/message, and Promote-a-post — with a dashboard over Express + WebSocket.",
+      workflow: [
+        "Queue job → Visible Chrome automation → Security challenge pause if needed → Local JSON result",
+      ],
+      architectureNotes: [
+        "TypeScript, Playwright (Chrome), optional Groq, Express + WebSocket dashboard on port 3847.",
+        "No private APIs / CAPTCHA solvers; security challenges pause the agent; data stored in local JSON files.",
+        "Pairs with Circulation (outreach-amplifier): promote jobs can be queued to Browsy.",
+      ],
+      tech: ["TypeScript", "Playwright", "Express", "WebSocket", "Groq"],
+      outcomes: [
+        "Local, human-visible outreach automation for IG/LI with challenge-aware pauses.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder browser agent / brand Browsy). Never claim scraped DMs, spam, or CAPTCHA bypass.",
+    },
+    {
+      id: "onecircle",
+      number: "08",
+      title: "OneCircle",
+      subtitle: "Consent-Based Live Location + Safety Circles",
+      year: "2025–2026",
+      problem:
+        "Families need consent-based location sharing and distance alerts without creepy always-on tracking.",
+      approach:
+        "Safety circles with live location (opt-in) and distance alerts vs circle admin.",
+      workflow: [
+        "Join circle → Consent to share location → Live updates → Distance alerts",
+      ],
+      architectureNotes: [
+        "Express + MongoDB + Socket.io backend; Next.js web; Expo mobile.",
+        "Backend API is functional; web/mobile UIs are mostly prototypes not yet fully wired to the API.",
+        "Alert bands: >10 km info, >50 km warning, >200 km emergency vs circle admin.",
+      ],
+      tech: ["Express", "MongoDB", "Socket.io", "Next.js", "Expo"],
+      outcomes: [
+        "Working location/safety API with defined distance alert thresholds; client UIs still maturing.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder onecircle). Be honest that web/mobile UIs are prototypes vs the API.",
+    },
+    {
+      id: "circulation",
+      number: "09",
+      title: "Circulation",
+      subtitle: "Impression-Target Campaign Planner (Approve-before-send)",
+      year: "2025–2026",
+      problem:
+        "Creators need an honest organic vs paid plan for a post’s impression target — without fake views or spam.",
+      approach:
+        "Paste a live post URL + impression target → plan → draft → human approve before send; optional Meta Ads created PAUSED; can queue IG/LI shares via Browsy.",
+      workflow: [
+        "Post URL + target → Organic/paid plan → Draft → Approve → Send / queue Browsy",
+      ],
+      architectureNotes: [
+        "Express, Zod, optional Groq, SSE desk UI, JSON persistence (port 4060).",
+        "Approve-before-send; Meta Ads created PAUSED; can POST promote jobs to Browsy (:3847).",
+        "Out of scope: spam, fake views, scraped DMs, virality guarantees.",
+      ],
+      tech: ["Express", "Zod", "Groq", "SSE", "JSON persistence"],
+      outcomes: [
+        "Campaign desk that plans impressions and only acts after explicit approval.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder outreach-amplifier / brand Circulation). Sibling of Browsy.",
+    },
+    {
+      id: "promptie",
+      number: "10",
+      title: "Promptie",
+      subtitle: "Multi-Brand Prompt Library + Checkout Flow Tests",
+      year: "2025–2026",
+      problem:
+        "Multi-brand ops need reusable prompts, member data, and checkout flow checks without rewriting everything per site.",
+      approach:
+        "Brand ops platform: reusable {{slot}} prompts, companies, Groq chat, Google Sheet site/widget lookup, member JSON, and headless Chrome checkout flow tests.",
+      workflow: [
+        "Brand + slots → Prompt library / Groq chat → Sheet lookup → Optional live checkout flow test",
+      ],
+      architectureNotes: [
+        "Next.js 16, Firebase Auth/Firestore, Groq, headless Chrome for flow tests.",
+        "Google sign-in required; Chat needs GROQ_API_KEY; flow tests hit live stores + temp mail.",
+      ],
+      tech: ["Next.js 16", "Firebase Auth", "Firestore", "Groq", "Headless Chrome"],
+      outcomes: [
+        "Central prompt/ops desk with optional live checkout flow verification.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder promptie). Do not invent store URLs or private sheet contents.",
+    },
+    {
+      id: "halcyon-desk",
+      number: "11",
+      title: "Halcyon Desk",
+      subtitle: "Paper-First Crypto/Stock Trading Copilot",
+      year: "2025–2026",
+      problem:
+        "Traders want a disciplined paper desk that scans opportunities and enforces profit filters — without reckless auto-loss selling.",
+      approach:
+        "Paper-first trading copilot: scan CoinDCX/CoinSwitch + stocks, 10-check profit filter, +10%/+20% take-profits, kill switch on by default for live.",
+      workflow: [
+        "Scan markets → 10-check filter → Paper (or gated live) idea → Take-profit levels / kill switch",
+      ],
+      architectureNotes: [
+        "Express, JSON DB, SSE UI, optional Groq, optional live CoinDCX/CoinSwitch (port 4050).",
+        "Never auto-sells at a loss; kill switch on by default for live; agent budget caps open notional.",
+        "Not investment advice.",
+      ],
+      tech: ["Express", "JSON DB", "SSE", "Groq", "CoinDCX", "CoinSwitch"],
+      outcomes: [
+        "Paper-first desk with strict risk gates and optional live exchange hooks.",
+      ],
+      liveUrl: null as string | null,
+      githubUrl: "https://github.com/shivanshu-tech",
+      sourceNote:
+        "Local portfolio product (folder trading-platform / brand Halcyon Desk). Never present as financial advice or guaranteed returns.",
+    },
   ],
   achievements: [
     "Founded and scaled a cross-college student community across GGSIPU to 10,000+ active members.",
@@ -306,6 +502,7 @@ export const resumeKnowledge = {
     points: [
       "Ships production systems end-to-end: Binary Geckos (30+ healthcare/telehealth sites), Cosmiron (full-stack + AWS), CollegeXConnect (founder-owned platform).",
       "AI systems depth: RAG (CompanyBrain ~1.3s retrieval), desktop agents (Voice Assistant ~65% interaction reduction), ApplyAI screening, ClientScout lead discovery.",
+      "Broader portfolio products: Automate Work (agency CRM/proposals), Browsy + Circulation (approve-before-send outreach), Promptie (brand prompts + flow tests), OneCircle (safety location), AlphaFind (demo game), Halcyon Desk (paper trading).",
       "Client delivery: Aviva Beauty live Shopify OS 2.0 theme; Creator.co.ai AI short-form video automation; Connect Astro astrology consultation platform for founder Gautam.",
       "Cloud & reliability: AWS EC2/ECS/VPC redesign, GitHub Actions CI/CD, Stripe/webhooks/third-party integrations in production.",
       "Product ownership: founded CollegeXConnect with 3,000+ users and 250,000+ visitors — demonstrates ownership beyond ticket-level execution.",
@@ -407,7 +604,8 @@ export const SUGGESTED_PROMPTS = [
   "What has he built using React and Next.js?",
   "Tell me about his experience at Binary Geckos.",
   "Explain ClientScout AI and how it works.",
-  "What are his strongest backend and cloud skills?",
+  "What is Browsy and how does it work with Circulation?",
+  "Tell me about Automate Work and Halcyon Desk.",
   "Show me his experience relevant to an AI Engineer role.",
   "Compare his experience with a job description.",
 ] as const;

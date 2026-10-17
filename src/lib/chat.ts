@@ -64,5 +64,26 @@ export function detectRelatedProjects(text: string): string[] {
   if (lower.includes("collegex") || lower.includes("college x")) {
     refs.push("CollegeXConnect");
   }
+  if (lower.includes("alphafind") || lower.includes("alpha find")) {
+    refs.push("AlphaFind");
+  }
+  if (lower.includes("automate work") || lower.includes("automation-only")) {
+    refs.push("Automate Work");
+  }
+  if (lower.includes("browsy") || lower.includes("browser agent")) {
+    refs.push("Browsy");
+  }
+  if (lower.includes("onecircle") || lower.includes("one circle")) {
+    refs.push("OneCircle");
+  }
+  if (lower.includes("circulation") || lower.includes("outreach-amplifier")) {
+    refs.push("Circulation");
+  }
+  if (lower.includes("promptie")) {
+    refs.push("Promptie");
+  }
+  if (lower.includes("halcyon") || lower.includes("trading platform")) {
+    refs.push("Halcyon Desk");
+  }
   return [...new Set(refs)];
 }

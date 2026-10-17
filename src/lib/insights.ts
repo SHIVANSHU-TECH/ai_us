@@ -107,10 +107,26 @@ export function extractPossibleName(
   return null;
 }
 
-export function shouldShowToolForm(message: string): boolean {
+export function shouldShowToolForm(
+  message: string,
+  mode: "resume" | "consult" = "resume"
+): boolean {
   const q = message.toLowerCase();
-  // ClientScout is public — no form needed
-  if (/\bclient\s*scout\b|clientscout\.in/.test(q) && !/\b(companybrain|applyai|voice assistant|browser agent)\b/.test(q)) {
+
+  // Consult: show the same in-chat contact form for hire / work-together intents
+  if (mode === "consult") {
+    const engage =
+      /\b(hire|hiring|contact|reach out|get in touch|work with|work together|collaborate|book a call|let'?s talk|connect with|engage|onboard|start a project|need (you|shiv|shivanshu)|want (you|shiv|shivanshu)|interested in (working|hiring)|send (a )?proposal|quote|pricing)\b/.test(
+        q
+      );
+    if (engage) return true;
+  }
+
+  // ClientScout is public — no form needed unless another private tool is named too
+  if (
+    /\bclient\s*scout\b|clientscout\.in/.test(q) &&
+    !/\b(companybrain|applyai|voice assistant|browser agent)\b/.test(q)
+  ) {
     return false;
   }
 
@@ -123,7 +139,6 @@ export function shouldShowToolForm(message: string): boolean {
       q
     );
 
-  // Explicit ask for a private tool, or access-intent + tool/product wording
   if (namedTool && accessIntent) return true;
   if (namedTool && /\b(want|need|get|show|give)\b/.test(q)) return true;
   return (

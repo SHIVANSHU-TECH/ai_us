@@ -10,7 +10,7 @@ export function buildCoreProfile(): string {
     `Contact: ${k.profile.email} | ${k.profile.phone} | ${k.profile.portfolio} | ${k.profile.github}`,
     `Education: ${edu.degree}, ${edu.school} (${edu.period}), CGPA ${edu.cgpa}`,
     "Roles: Binary Geckos (Full Stack, Apr 2026–Present, 30+ healthcare sites, React/Stripe/GA4); Arora Innovation/Cosmiron (Full Stack, Dec 2025–Mar 2026, React/Node/AWS/CI-CD); CollegeXConnect Founder (Jun 2024–Present, 3k+ users, 250k+ visitors, Next.js/Node/MongoDB/Firebase); Tikk18; Vital-Vistara; Salesforce intern.",
-    "Projects: CompanyBrain RAG (~1.3s retrieval); AI Voice Assistant Electron/Gemini (~65% fewer repetitive actions); ApplyAI resume screening; ClientScout AI (https://clientscout.in).",
+    "Projects: CompanyBrain RAG (~1.3s retrieval); AI Voice Assistant Electron/Gemini (~65% fewer repetitive actions); ApplyAI resume screening; ClientScout AI (https://clientscout.in); plus portfolio builds AlphaFind, Automate Work, Browsy, OneCircle, Circulation, Promptie, Halcyon Desk.",
     "Client work: Aviva Beauty Shopify OS 2.0 (Vanshika, https://avivabeauty.in); Creator.co.ai AI short-form video automation (Rohit Bamola, demo reel: https://res.cloudinary.com/dpfmxzkr/video/upload/v1791141530/ai-agents-vishal-sikka/regen-avatar2/final/ai-agents-vishal-sikka-avatar2-final.mp4); Connect Astro astrology consultation platform (Gautam, founder) — AstroTalk-style connect with astrologers.",
     `Skills: ${[
       ...k.skills.frontend.slice(0, 5),
@@ -138,6 +138,52 @@ export function buildRelevantKnowledge(query: string): string {
   if (/clientscout|lead|prospect|client scout/.test(q)) {
     parts.push(detailProjects(["clientscout"]));
   }
+  if (/alphafind|alpha.?find|alphabet|demo bet|vowel|consonant/.test(q)) {
+    parts.push(detailProjects(["alphafind"]));
+  }
+  if (
+    /automate work|automation-only|agency (crm|workspace|proposal)|ai proposal|lighthouse/.test(
+      q
+    )
+  ) {
+    parts.push(detailProjects(["automate-work"]));
+  }
+  {
+    const outreachIds: string[] = [];
+    if (/browsy|browser agent|playwright|instagram dm|linkedin connect/.test(q)) {
+      outreachIds.push("browsy");
+    }
+    if (
+      /circulation|outreach.?amplifier|impression target|approve.?before.?send|meta ads/.test(
+        q
+      )
+    ) {
+      outreachIds.push("circulation");
+    }
+    // Sibling cluster: mention both when either promote/outreach pairing is implied
+    if (
+      outreachIds.length === 1 &&
+      /promote|pair|together|queue|sibling/.test(q)
+    ) {
+      outreachIds.push(
+        outreachIds[0] === "browsy" ? "circulation" : "browsy"
+      );
+    }
+    if (outreachIds.length) {
+      parts.push(detailProjects([...new Set(outreachIds)]));
+    }
+  }
+  if (/onecircle|one circle|safety circle|live location|distance alert/.test(q)) {
+    parts.push(detailProjects(["onecircle"]));
+  }
+  if (/promptie|prompt library|\{\{slot\}\}|checkout flow test/.test(q)) {
+    parts.push(detailProjects(["promptie"]));
+  }
+  if (
+    /halcyon|trading.?platform|paper.?trad|coindcx|coinswitch|take.?profit/.test(q)
+  ) {
+    parts.push(detailProjects(["halcyon-desk"]));
+  }
 
   // For focused skill/AI questions, add compact skills + top AI projects once.
   if (wantsSkills && !wantsOverview) {
@@ -149,8 +195,38 @@ export function buildRelevantKnowledge(query: string): string {
     );
   }
 
-  if (wantsAi && !/companybrain|voice|applyai|clientscout/.test(q)) {
-    parts.push(detailProjects(["companybrain", "voice-assistant", "applyai", "clientscout"]));
+  if (
+    wantsAi &&
+    !/companybrain|voice|applyai|clientscout|browsy|circulation|promptie|halcyon|automate/.test(
+      q
+    )
+  ) {
+    parts.push(
+      detailProjects([
+        "companybrain",
+        "voice-assistant",
+        "applyai",
+        "clientscout",
+      ])
+    );
+  }
+
+  if (
+    /portfolio projects|side projects|other projects|what else has he built|project list/.test(
+      q
+    )
+  ) {
+    parts.push(
+      detailProjects([
+        "alphafind",
+        "automate-work",
+        "browsy",
+        "onecircle",
+        "circulation",
+        "promptie",
+        "halcyon-desk",
+      ])
+    );
   }
 
   // Experience deep-dive without a named company → include current + founder briefly already in core.

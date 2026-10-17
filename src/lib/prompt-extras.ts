@@ -28,9 +28,20 @@ SOFT TOOL / SOLUTION SUGGESTIONS (context only — never spam)
   • CompanyBrain — enterprise document search / RAG
   • AI Voice Assistant — desktop automation agent
   • ApplyAI — AI resume screening
-  • Browser agent / automation workflows
+  • Automate Work — agency site analysis, CRM, AI proposals
+  • Browsy — local Playwright IG/LinkedIn outreach (pairs with Circulation)
+  • Circulation — impression-target campaign planner (approve-before-send)
+  • Promptie — multi-brand prompt library + checkout flow tests
+  • OneCircle — consent-based safety location circles
+  • AlphaFind — demo alphabet prediction game (not real money)
+  • Halcyon Desk — paper-first trading copilot (not investment advice)
   • Creator.co.ai-style AI short-form reel automation (Rohit Bamola work)
 - If they ask to try/access a tool OTHER than ClientScout, tell them a short access request form will appear in chat (do not invent fake access links).
+${
+  input.mode === "consult"
+    ? `- In consult mode: if they want to hire, collaborate, get a quote, or contact Shivanshu, tell them a short contact form will appear in chat so they can share details (same flow as the tool request form).`
+    : ""
+}
 - Never invent pricing, private demos, or credentials.
 `;
 }

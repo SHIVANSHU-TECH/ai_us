@@ -334,13 +334,16 @@ export function ChatInterface({
         {showToolForm && (
           <div className="max-w-[92%] md:max-w-[85%]">
             <ToolRequestForm
+              variant={mode}
               defaultTools={toolFormDefault}
               onSubmitted={() => {
                 setMessages((prev) => [
                   ...prev,
                   createMessage(
                     "assistant",
-                    "Got it — your tool access request is saved. Shivanshu will review and follow up."
+                    mode === "consult"
+                      ? "Got it — your contact request is saved. Shivanshu will review and follow up."
+                      : "Got it — your tool access request is saved. Shivanshu will review and follow up."
                   ),
                 ]);
               }}

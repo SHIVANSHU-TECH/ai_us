@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     const email = String(body.email || "").trim();
     const positionCompany = String(body.positionCompany || "").trim();
     const problem = String(body.problem || "").trim();
+    const source = body.source === "consult" ? "consult" : "resume";
 
     if (!name || !toolsWanted || !email || !positionCompany || !problem) {
       return NextResponse.json(
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
       : null;
     const decoded = token ? await verifyIdToken(token) : null;
 
-    const id = await saveToolRequest({
+    await saveToolRequest({
       uid: decoded?.uid || null,
       emailFromAuth: decoded?.email || null,
       name: name.slice(0, 120),
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
       email: email.slice(0, 200),
       positionCompany: positionCompany.slice(0, 200),
       problem: problem.slice(0, 2000),
+      source,
     });
 
     return NextResponse.json({ ok: true });

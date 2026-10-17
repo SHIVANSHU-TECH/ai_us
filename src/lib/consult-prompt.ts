@@ -10,6 +10,7 @@ export const CONSULT_SUGGESTED_PROMPTS = [
   "We're building an astrology / consultation app where users talk to experts.",
   "Walk me through how you'd approach our problem before pitching anyone.",
   "We're hiring — does Shiv align with a full-stack + AI role?",
+  "I want to hire Shivanshu — how do we get started?",
 ] as const;
 
 function buildClientPitchCard(): string {
@@ -47,6 +48,7 @@ WHEN TO PITCH SHIVANSHU
 STYLE
 - Human, like ChatGPT. Clear. No corporate jargon piles.
 - Prefer questions when you need more context.
+- If they want to hire / contact / start a project with Shivanshu, say a short contact form will appear in chat — do not invent calendars or fake booking links.
 
 SHIVANSHU SNAPSHOT (verified — do not invent)
 ${buildCoreProfile()}

@@ -6,14 +6,18 @@ import { useAuth } from "@/components/auth/AuthProvider";
 
 interface ToolRequestFormProps {
   defaultTools?: string;
+  /** resume = tool access; consult = hire / project contact */
+  variant?: "resume" | "consult";
   onSubmitted?: () => void;
 }
 
 export function ToolRequestForm({
   defaultTools = "",
+  variant = "resume",
   onSubmitted,
 }: ToolRequestFormProps) {
   const { user, idToken, refreshToken } = useAuth();
+  const isConsult = variant === "consult";
   const [name, setName] = useState(user?.displayName || "");
   const [toolsWanted, setToolsWanted] = useState(defaultTools);
   const [email, setEmail] = useState(user?.email || "");
@@ -26,8 +30,9 @@ export function ToolRequestForm({
   if (done) {
     return (
       <div className="border border-mint/35 bg-mint/5 px-3 py-3 text-sm text-soft">
-        Request sent. Shivanshu will review it and follow up on access for the tools you
-        asked about.
+        {isConsult
+          ? "Request sent. Shivanshu will review it and follow up."
+          : "Request sent. Shivanshu will review it and follow up on access for the tools you asked about."}
       </div>
     );
   }
@@ -53,6 +58,7 @@ export function ToolRequestForm({
               email,
               positionCompany,
               problem,
+              source: variant,
             }),
           });
           const data = (await res.json()) as { error?: string };
@@ -73,19 +79,26 @@ export function ToolRequestForm({
         }
       }}
     >
-      <div className="label-caps">Tool access request</div>
+      <div className="label-caps">
+        {isConsult ? "Contact / project request" : "Tool access request"}
+      </div>
       <p className="text-xs text-mute">
-        ClientScout is open at clientscout.in. For other tools, send this and we&apos;ll
-        get back to you.
+        {isConsult
+          ? "Share a few details and we will follow up. Same secure form as tool requests — saved for Shivanshu."
+          : "ClientScout is open at clientscout.in. For other tools, send this and we'll get back to you."}
       </p>
 
       <Field label="Name" value={name} onChange={setName} required />
       <Field
-        label="Tools you want to try"
+        label={isConsult ? "What you need help with" : "Tools you want to try"}
         value={toolsWanted}
         onChange={setToolsWanted}
         required
-        placeholder="CompanyBrain, Voice Assistant, ApplyAI…"
+        placeholder={
+          isConsult
+            ? "Shopify site, AI reels, hiring, automation…"
+            : "CompanyBrain, Voice Assistant, ApplyAI…"
+        }
       />
       <Field label="Email" value={email} onChange={setEmail} required type="email" />
       <Field

@@ -137,6 +137,7 @@ export async function saveToolRequest(input: {
   email: string;
   positionCompany: string;
   problem: string;
+  source?: "resume" | "consult";
 }) {
   const db = getAdminDb();
   if (!db) throw new Error("Firebase admin is not configured");
@@ -151,6 +152,7 @@ export async function saveToolRequest(input: {
     email: input.email,
     positionCompany: input.positionCompany,
     problem: input.problem,
+    source: input.source || "resume",
     createdAt: Date.now(),
     status: "new",
   });

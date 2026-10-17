@@ -234,7 +234,7 @@ export async function POST(req: Request) {
       throw lastError || new Error("Chat provider unavailable");
     }
 
-    const showToolForm = shouldShowToolForm(message);
+    const showToolForm = shouldShowToolForm(message, mode);
     const relatedProjects = detectRelatedProjects(`${message}\n${answer}`);
 
     // Persist when signed in + admin configured
